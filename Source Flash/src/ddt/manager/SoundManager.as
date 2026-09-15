@@ -2,14 +2,12 @@ package ddt.manager
 {
    import com.pickgliss.loader.ModuleLoader;
    import flash.events.Event;
-   import flash.events.NetStatusEvent;
+   import flash.events.IOErrorEvent;
    import flash.media.Sound;
    import flash.media.SoundChannel;
    import flash.media.SoundTransform;
-   import flash.net.NetConnection;
-   import flash.net.NetStream;
+   import flash.net.URLRequest;
    import flash.utils.Dictionary;
-   import road7th.math.randRange;
    
    public class SoundManager
    {
@@ -45,9 +43,11 @@ package ddt.manager
       
       private var soundVolumn:Number;
       
-      private var _nc:NetConnection;
+      private var _musicSound:Sound;
       
-      private var _ns:NetStream;
+      private var _musicChannel:SoundChannel;
+
+      private var _musicPosition:Number = 0;
       
       public function SoundManager()
       {
@@ -58,12 +58,6 @@ package ddt.manager
          this._musicLoop = false;
          this._allowMusic = true;
          this._allowSound = true;
-         this._nc = new NetConnection();
-         this._nc.connect(null);
-         this._ns = new NetStream(this._nc);
-         this._ns.bufferTime = 0.3;
-         this._ns.client = this;
-         this._ns.addEventListener(NetStatusEvent.NET_STATUS,this.__netStatus);
          this._musicPlayList = [];
       }
       
@@ -131,9 +125,9 @@ package ddt.manager
          this.allowMusic = param1;
          this.allowSound = param2;
          this._musicVolume = param3;
-         if(this.allowMusic)
+         if(this.allowMusic && this._musicChannel)
          {
-            this._ns.soundTransform = new SoundTransform(param3 / 100);
+            this._musicChannel.soundTransform = new SoundTransform(param3 / 100);
          }
          this.soundVolumn = param4;
       }
@@ -387,106 +381,152 @@ package ddt.manager
       private function playMusicImp(param1:Array, param2:Boolean) : void
       {
          this._musicLoop = param2;
-         this._musicPlayList = param1;
+         this._musicPlayList = param1.concat();
          if(param1.length > 0)
          {
-            this._currentMusic = param1[0];
-            this._isMusicPlaying = true;
-            this._ns.play(SITE_MAIN + "sound/" + this._currentMusic + ".flv");
-            this._ns.soundTransform = new SoundTransform(this._musicVolume / 100);
-            if(!this._allowMusic)
-            {
-               this._ns.removeEventListener(NetStatusEvent.NET_STATUS,this.__onMusicStaus);
-               this.pauseMusic();
-            }
-            else
-            {
-               this._ns.addEventListener(NetStatusEvent.NET_STATUS,this.__onMusicStaus);
-            }
+            this._currentMusic = String(param1[0]);
+            this._musicPosition = 0;
+            this.startMusic();
          }
       }
       
-      private function __onMusicStaus(param1:NetStatusEvent) : void
+      private function startMusic() : void
       {
-         if(param1.info.code == "NetConnection.Connect.Failed" || param1.info.code == "NetStream.Play.StreamNotFound")
+         if(!this._currentMusic)
          {
-            if(this.currentMusicTry < MusicFailedTryTime)
+            return;
+         }
+         this.stopMusicChannel();
+         if(this._musicSound)
+         {
+            this._musicSound.removeEventListener(IOErrorEvent.IO_ERROR,this.__onMusicLoadError);
+            try
             {
-               ++this.currentMusicTry;
-               this._ns.play(SITE_MAIN + "sound/" + this._currentMusic + ".flv");
+               this._musicSound.close();
             }
-            else
+            catch(e:Error)
             {
-               this._ns.removeEventListener(NetStatusEvent.NET_STATUS,this.__onMusicStaus);
             }
          }
-         else if(param1.info.code == "NetStream.Play.Start")
+         this._musicSound = new Sound();
+         this._musicSound.addEventListener(IOErrorEvent.IO_ERROR,this.__onMusicLoadError);
+         this._musicSound.load(new URLRequest(SITE_MAIN + "sound/" + this._currentMusic + ".mp3"));
+         if(this._allowMusic)
          {
-            this._ns.removeEventListener(NetStatusEvent.NET_STATUS,this.__onMusicStaus);
+            this.startMusicChannel(this._musicPosition);
+         }
+         else
+         {
+            this._isMusicPlaying = false;
          }
       }
       
+      private function startMusicChannel(param1:Number) : void
+      {
+         var _loc2_:int = this._musicLoop ? 2147483647 : Math.max(0,this._musicPlayList.length - 1);
+         this._musicChannel = this._musicSound.play(param1,_loc2_,new SoundTransform(this._musicVolume / 100));
+         if(this._musicChannel)
+         {
+            this._musicChannel.addEventListener(Event.SOUND_COMPLETE,this.__onMusicComplete);
+            this._isMusicPlaying = true;
+         }
+      }
+      
+      private function stopMusicChannel() : void
+      {
+         if(this._musicChannel)
+         {
+            this._musicChannel.removeEventListener(Event.SOUND_COMPLETE,this.__onMusicComplete);
+            this._musicChannel.stop();
+            this._musicChannel = null;
+         }
+      }
+      
+      private function __onMusicLoadError(param1:IOErrorEvent) : void
+      {
+         if(this._musicSound)
+         {
+            this._musicSound.removeEventListener(IOErrorEvent.IO_ERROR,this.__onMusicLoadError);
+         }
+         if(this.currentMusicTry < MusicFailedTryTime)
+         {
+            ++this.currentMusicTry;
+            this._musicPosition = 0;
+            this.startMusic();
+         }
+         else
+         {
+            this._isMusicPlaying = false;
+         }
+      }
+      
+      private function __onMusicComplete(param1:Event) : void
+      {
+         this.stopMusicChannel();
+         this._musicPosition = 0;
+         this._isMusicPlaying = false;
+      }
+
       public function setMusicVolumeByRatio(param1:Number) : void
       {
          if(this.allowMusic)
          {
             this._musicVolume *= param1;
-            this._ns.soundTransform = new SoundTransform(this._musicVolume / 100);
+            if(this._musicChannel)
+            {
+               this._musicChannel.soundTransform = new SoundTransform(this._musicVolume / 100);
+            }
          }
       }
       
       public function pauseMusic() : void
       {
-         if(this._isMusicPlaying)
+         if(this._isMusicPlaying && this._musicChannel)
          {
-            this._ns.soundTransform = new SoundTransform(0);
+            this._musicPosition = this._musicChannel.position;
+            this.stopMusicChannel();
             this._isMusicPlaying = false;
          }
       }
       
       public function resumeMusic() : void
       {
-         if(this._allowMusic && this._currentMusic)
+         if(this._allowMusic && this._currentMusic && !this._isMusicPlaying)
          {
-            this._ns.soundTransform = new SoundTransform(this._musicVolume / 100);
-            this._isMusicPlaying = true;
-         }
-      }
-      
-      public function stopMusic() : void
-      {
-         if(this._currentMusic)
-         {
-            this._isMusicPlaying = false;
-            this._ns.close();
-            this._currentMusic = null;
-         }
-      }
-      
-      public function playGameBackMusic(param1:String) : void
-      {
-         this.playMusicImp([param1,param1],false);
-      }
-      
-      private function __netStatus(param1:NetStatusEvent) : void
-      {
-         var _loc2_:int = 0;
-         if(param1.info.code == "NetStream.Play.Stop")
-         {
-            if(this._musicLoop)
+            if(this._musicSound)
             {
-               this.playMusicImp(this._musicPlayList,true);
-            }
-            else if(this._musicPlayList.length > 0)
-            {
-               this.playMusicImp(this._musicPlayList,false);
+               this.startMusicChannel(this._musicPosition);
             }
             else
             {
-               _loc2_ = randRange(0,this._music.length - 1);
-               this.playMusicImp([this._music[_loc2_]],false);
+               this.startMusic();
             }
          }
+      }
+
+      public function stopMusic() : void
+      {
+         this.stopMusicChannel();
+         if(this._musicSound)
+         {
+            this._musicSound.removeEventListener(IOErrorEvent.IO_ERROR,this.__onMusicLoadError);
+            try
+            {
+               this._musicSound.close();
+            }
+            catch(e:Error)
+            {
+            }
+            this._musicSound = null;
+         }
+         this._musicPosition = 0;
+         this._isMusicPlaying = false;
+         this._currentMusic = null;
+      }
+
+      public function playGameBackMusic(param1:String) : void
+      {
+         this.playMusicImp([param1,param1],false);
       }
       
       public function onMetaData(param1:Object) : void

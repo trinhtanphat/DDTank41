@@ -112,7 +112,7 @@ package game.actions.newHand
             return false;
          }
          var _loc2_:int = this._enemyPlayer.pos.x > this._player.pos.x ? int(int(1)) : int(int(-1));
-         var _loc3_:int = _loc1_.target.x >= _loc1_.X ? int(int(1)) : int(int(-1));
+         var _loc3_:int = _loc1_.impactTarget.x >= _loc1_.X ? int(int(1)) : int(int(-1));
          if(_loc2_ != _loc3_)
          {
             showFightTip("tank.trainer.fightAction.newHandTip1");
@@ -126,7 +126,7 @@ package game.actions.newHand
          var _loc1_:Bomb = null;
          for each(_loc1_ in this._bombs)
          {
-            if(_loc1_.Template.ID != 64 && this._map.IsOutMap(_loc1_.target.x,_loc1_.target.y))
+            if(_loc1_.Template.ID != 64 && this._map.IsOutMap(_loc1_.impactTarget.x,_loc1_.impactTarget.y))
             {
                ++this._player.NewHandHurtEnemyCounter;
                this.checkHurtEnemy(false);
@@ -165,9 +165,9 @@ package game.actions.newHand
          for each(_loc3_ in this._bombs)
          {
             _loc4_ = _loc3_.Template.ID;
-            if(_loc3_ && (_loc4_ != 64 && _loc4_ != Bomb.FLY_BOMB && _loc4_ != Bomb.FREEZE_BOMB) && (_loc1_ == -1 || Math.abs(_loc3_.target.x - this._enemyPlayer.pos.x) < _loc1_))
+            if(_loc3_ && (_loc4_ != 64 && _loc4_ != Bomb.FLY_BOMB && _loc4_ != Bomb.FREEZE_BOMB) && (_loc1_ == -1 || Math.abs(_loc3_.impactTarget.x - this._enemyPlayer.pos.x) < _loc1_))
             {
-               _loc1_ = Math.abs(_loc3_.target.x - this._enemyPlayer.pos.x);
+               _loc1_ = Math.abs(_loc3_.impactTarget.x - this._enemyPlayer.pos.x);
                _loc2_ = _loc3_;
             }
          }
@@ -194,7 +194,7 @@ package game.actions.newHand
             if(this._player.NewHandHurtEnemyCounter > 1)
             {
                _loc3_ = this._enemyPlayer.pos.x > this._player.pos.x ? int(int(1)) : int(int(-1));
-               _loc4_ = _loc2_.target.x > this._enemyPlayer.pos.x ? int(int(1)) : int(int(-1));
+               _loc4_ = _loc2_.impactTarget.x > this._enemyPlayer.pos.x ? int(int(1)) : int(int(-1));
                if(param1)
                {
                   showFightTip("tank.trainer.fightAction.newHandTip3" + (_loc3_ == _loc4_ ? "Small" : "Large"));

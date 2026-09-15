@@ -1312,11 +1312,11 @@ package game.view
                _loc33_ = null;
                if(_loc11_.length == 3)
                {
-                  _loc33_ = Bomb(_loc11_[1]).target;
+                  _loc33_ = Bomb(_loc11_[1]).impactTarget;
                }
                else if(_loc11_.length == 1)
                {
-                  _loc33_ = Bomb(_loc11_[0]).target;
+                  _loc33_ = Bomb(_loc11_[0]).impactTarget;
                }
                _loc34_ = Player(_loc3_).currentPet.petBeatInfo;
                _loc34_["actionName"] = _loc18_;

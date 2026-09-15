@@ -37,9 +37,9 @@ package game.animations
          if(this._bomb is SimpleBomb)
          {
             _loc4_ = this._bomb as SimpleBomb;
-            if(_loc4_.target && _loc4_.owner)
+            if(_loc4_.impactTarget && _loc4_.owner)
             {
-               if(_loc4_.target.x - _loc4_.owner.pos.x < 0)
+               if(_loc4_.impactTarget.x - _loc4_.owner.pos.x < 0)
                {
                   this._scale = -1;
                }

@@ -6,6 +6,7 @@ package ddt.manager
    import flash.display.Bitmap;
    import flash.display.MovieClip;
    import flash.display.Sprite;
+   import flash.system.ApplicationDomain;
    import flash.utils.Dictionary;
    import game.objects.BombAsset;
    
@@ -126,7 +127,21 @@ package ddt.manager
       
       public static function createBulletMovie(param1:int) : MovieClip
       {
-         return ClassUtils.CreatInstance(solveBulletMovieName(param1)) as MovieClip;
+         var _loc1_:String = solveBulletMovieName(param1);
+         var _loc2_:MovieClip = null;
+         if(ApplicationDomain.currentDomain.hasDefinition(solveBulletMovieName(param1)))
+         {
+            _loc2_ = ClassUtils.CreatInstance(_loc1_) as MovieClip;
+            if(_loc2_)
+            {
+               return _loc2_;
+            }
+         }
+         _loc2_ = new MovieClip();
+         _loc2_.graphics.beginFill(16777215,1);
+         _loc2_.graphics.drawCircle(0,0,4);
+         _loc2_.graphics.endFill();
+         return _loc2_;
       }
       
       public static function createShootMovieMovie(param1:int) : MovieClip

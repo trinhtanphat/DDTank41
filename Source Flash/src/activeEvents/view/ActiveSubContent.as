@@ -203,7 +203,6 @@ package activeEvents.view
             _loc5_.info.showCancel = false;
             return;
          }
-         this._info.isAttend = true;
          this._activeGetBtn.enable = false;
          var _loc2_:ByteArray = new ByteArray();
          _loc2_.writeUTFBytes(this._textInput.text);
@@ -238,6 +237,34 @@ package activeEvents.view
          _loc2_.removeEventListener(LoaderEvent.LOAD_ERROR,this.__onLoadError);
          _loc2_.removeEventListener(LoaderEvent.COMPLETE,this.__onLoadComplete);
          MessageTipManager.getInstance().show(_loc2_.content);
+         if(this.claimSucceeded(_loc2_))
+         {
+            this._info.isAttend = true;
+            this.applyClaimedState();
+         }
+         else if(this._info.HasKey != 1)
+         {
+            this._activeGetBtn.enable = true;
+         }
+      }
+
+      private function claimSucceeded(param1:BaseLoader) : Boolean
+      {
+         try
+         {
+            var _loc2_:XML = new XML(param1.content);
+            return String(_loc2_.@value).toLowerCase() == "true";
+         }
+         catch(e:Error)
+         {
+         }
+         return false;
+      }
+
+      private function applyClaimedState() : void
+      {
+         this._activeGetBtn.text = "Đã nhận";
+         this._activeGetBtn.enable = false;
       }
       
       private function removeEvent() : void
@@ -349,6 +376,10 @@ package activeEvents.view
          {
             this._activeGetBtn.visible = true;
             this._activeGetBtn.enable = !this._info.isAttend;
+            if(this._info.isAttend)
+            {
+               this.applyClaimedState();
+            }
          }
          else
          {

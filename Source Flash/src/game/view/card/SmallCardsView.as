@@ -177,32 +177,6 @@ package game.view.card
          }
       }
       
-      private function isBotRewardSuppressedMatch() : Boolean
-      {
-         var _loc1_:Player = null;
-         if(!this._gameInfo || !this._gameInfo.livings)
-         {
-            return false;
-         }
-         for each(_loc1_ in this._gameInfo.livings)
-         {
-            if(_loc1_ && _loc1_.playerInfo && _loc1_.playerInfo.NickName && _loc1_.playerInfo.NickName.indexOf("NPC ") == 0)
-            {
-               return true;
-            }
-         }
-         return false;
-      }
-
-      private function getDisabledCardMessage() : String
-      {
-         if(this.isBotRewardSuppressedMatch())
-         {
-            return "Tr\u1eadn \u0111\u1ea5u v\u1edbi NPC/bot kh\u00f4ng c\u00f3 l\u01b0\u1ee3t l\u1eadt b\u00e0i th\u01b0\u1edfng.";
-         }
-         return LanguageMgr.GetTranslation("tank.gameover.DisableGetCard");
-      }
-
       protected function createCards() : void
       {
          var _loc3_:Point = null;
@@ -233,7 +207,7 @@ package game.view.card
             _loc3_.y = int(_loc2_ / this._cardColumns) * (_loc1_.y + _loc4_.height) + 32;
             _loc4_.x = _loc1_.x + _loc4_.width + 87;
             _loc4_.y = _loc1_.y + _loc4_.height + 32;
-            _loc4_.msg = this.getDisabledCardMessage();
+            _loc4_.msg = LanguageMgr.GetTranslation("tank.gameover.DisableGetCard");
             addChild(_loc4_);
             this._posArr.push(_loc3_);
             this._cards.push(_loc4_);

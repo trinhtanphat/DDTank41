@@ -8,47 +8,47 @@ package ddt.manager
    import flash.media.SoundTransform;
    import flash.net.URLRequest;
    import flash.utils.Dictionary;
-   
+
    public class SoundManager
    {
-      
+
       private static const MusicFailedTryTime:int = 3;
-      
+
       private static var _instance:SoundManager;
-      
+
       public static var SITE_MAIN:String = "";
-       
-      
+
+
       private var currentMusicTry:int = 0;
-      
+
       private var _dic:Dictionary;
-      
+
       private var _music:Array;
-      
+
       private var _allowSound:Boolean;
-      
+
       private var _currentSound:Dictionary;
-      
+
       private var _allowMusic:Boolean;
-      
+
       private var _currentMusic:String;
-      
+
       private var _musicLoop:Boolean;
-      
+
       private var _isMusicPlaying:Boolean;
-      
+
       private var _musicPlayList:Array;
-      
+
       private var _musicVolume:Number;
-      
+
       private var soundVolumn:Number;
-      
+
       private var _musicSound:Sound;
-      
+
       private var _musicChannel:SoundChannel;
 
       private var _musicPosition:Number = 0;
-      
+
       public function SoundManager()
       {
          super();
@@ -60,7 +60,7 @@ package ddt.manager
          this._allowSound = true;
          this._musicPlayList = [];
       }
-      
+
       public static function get instance() : SoundManager
       {
          if(_instance == null)
@@ -69,12 +69,12 @@ package ddt.manager
          }
          return _instance;
       }
-      
+
       public function get allowSound() : Boolean
       {
          return this._allowSound;
       }
-      
+
       public function set allowSound(param1:Boolean) : void
       {
          if(this._allowSound == param1)
@@ -87,12 +87,12 @@ package ddt.manager
             this.stopAllSound();
          }
       }
-      
+
       public function get allowMusic() : Boolean
       {
          return this._allowMusic;
       }
-      
+
       public function set allowMusic(param1:Boolean) : void
       {
          if(this._allowMusic == param1)
@@ -109,17 +109,17 @@ package ddt.manager
             this.pauseMusic();
          }
       }
-      
+
       public function onPlayStatus(param1:*) : void
       {
       }
-      
+
       public function setup(param1:Array, param2:String) : void
       {
          this._music = !!Boolean(param1) ? param1 : [];
          SITE_MAIN = param2;
       }
-      
+
       public function setConfig(param1:Boolean, param2:Boolean, param3:Number, param4:Number) : void
       {
          this.allowMusic = param1;
@@ -131,39 +131,36 @@ package ddt.manager
          }
          this.soundVolumn = param4;
       }
-      
-      public function setupAudioResource() : void
+
+      public function setupAudioResource(param1:Boolean = false) : void
       {
-         this.init();
+         if(!param1)
+         {
+            this.initI();
+         }
+         this.initII();
       }
-      
-      private function init() : void
+
+      private function initI() : void
       {
          this._dic["001"] = ModuleLoader.getDefinition("Sound001");
-         this._dic["003"] = ModuleLoader.getDefinition("Sound003");
          this._dic["006"] = ModuleLoader.getDefinition("Sound006");
          this._dic["007"] = ModuleLoader.getDefinition("Sound007");
          this._dic["008"] = ModuleLoader.getDefinition("Sound008");
          this._dic["009"] = ModuleLoader.getDefinition("Sound009");
          this._dic["010"] = ModuleLoader.getDefinition("Sound010");
          this._dic["012"] = ModuleLoader.getDefinition("Sound012");
-         this._dic["013"] = ModuleLoader.getDefinition("Sound013");
          this._dic["014"] = ModuleLoader.getDefinition("Sound014");
          this._dic["015"] = ModuleLoader.getDefinition("Sound015");
-         this._dic["016"] = ModuleLoader.getDefinition("Sound016");
          this._dic["017"] = ModuleLoader.getDefinition("Sound017");
          this._dic["018"] = ModuleLoader.getDefinition("Sound018");
-         this._dic["019"] = ModuleLoader.getDefinition("Sound019");
-         this._dic["020"] = ModuleLoader.getDefinition("Sound020");
          this._dic["021"] = ModuleLoader.getDefinition("Sound021");
          this._dic["023"] = ModuleLoader.getDefinition("Sound023");
          this._dic["025"] = ModuleLoader.getDefinition("Sound025");
          this._dic["027"] = ModuleLoader.getDefinition("Sound027");
-         this._dic["029"] = ModuleLoader.getDefinition("Sound029");
          this._dic["031"] = ModuleLoader.getDefinition("Sound031");
          this._dic["033"] = ModuleLoader.getDefinition("Sound033");
          this._dic["035"] = ModuleLoader.getDefinition("Sound035");
-         this._dic["038"] = ModuleLoader.getDefinition("Sound038");
          this._dic["039"] = ModuleLoader.getDefinition("Sound039");
          this._dic["040"] = ModuleLoader.getDefinition("Sound040");
          this._dic["041"] = ModuleLoader.getDefinition("Sound041");
@@ -185,20 +182,16 @@ package ddt.manager
          this._dic["073"] = ModuleLoader.getDefinition("Sound073");
          this._dic["075"] = ModuleLoader.getDefinition("Sound075");
          this._dic["078"] = ModuleLoader.getDefinition("Sound078");
-         this._dic["079"] = ModuleLoader.getDefinition("Sound079");
          this._dic["081"] = ModuleLoader.getDefinition("Sound081");
          this._dic["083"] = ModuleLoader.getDefinition("Sound083");
          this._dic["087"] = ModuleLoader.getDefinition("Sound087");
          this._dic["088"] = ModuleLoader.getDefinition("Sound088");
-         this._dic["089"] = ModuleLoader.getDefinition("Sound089");
-         this._dic["090"] = ModuleLoader.getDefinition("Sound090");
          this._dic["091"] = ModuleLoader.getDefinition("Sound091");
          this._dic["092"] = ModuleLoader.getDefinition("Sound092");
          this._dic["093"] = ModuleLoader.getDefinition("Sound093");
          this._dic["094"] = ModuleLoader.getDefinition("Sound094");
          this._dic["095"] = ModuleLoader.getDefinition("Sound095");
          this._dic["096"] = ModuleLoader.getDefinition("Sound096");
-         this._dic["097"] = ModuleLoader.getDefinition("Sound097");
          this._dic["098"] = ModuleLoader.getDefinition("Sound098");
          this._dic["099"] = ModuleLoader.getDefinition("Sound099");
          this._dic["100"] = ModuleLoader.getDefinition("Sound100");
@@ -256,7 +249,6 @@ package ddt.manager
          this._dic["153"] = ModuleLoader.getDefinition("Sound153");
          this._dic["155"] = ModuleLoader.getDefinition("Sound155");
          this._dic["156"] = ModuleLoader.getDefinition("Sound156");
-         this._dic["157"] = ModuleLoader.getDefinition("Sound157");
          this._dic["158"] = ModuleLoader.getDefinition("Sound158");
          this._dic["159"] = ModuleLoader.getDefinition("Sound159");
          this._dic["160"] = ModuleLoader.getDefinition("Sound160");
@@ -265,9 +257,37 @@ package ddt.manager
          this._dic["163"] = ModuleLoader.getDefinition("Sound163");
          this._dic["164"] = ModuleLoader.getDefinition("Sound164");
          this._dic["165"] = ModuleLoader.getDefinition("Sound165");
+         this._dic["166"] = ModuleLoader.getDefinition("Sound166");
+         this._dic["167"] = ModuleLoader.getDefinition("Sound167");
+         this._dic["200"] = ModuleLoader.getDefinition("Sound200");
+         this._dic["201"] = ModuleLoader.getDefinition("Sound201");
+         this._dic["202"] = ModuleLoader.getDefinition("Sound202");
+         this._dic["168"] = ModuleLoader.getDefinition("Sound168");
+         this._dic["169"] = ModuleLoader.getDefinition("Sound169");
+         this._dic["170"] = ModuleLoader.getDefinition("Sound170");
+         this._dic["171"] = ModuleLoader.getDefinition("Sound171");
          this._dic["1001"] = ModuleLoader.getDefinition("Sound1001");
+         this._dic["203"] = ModuleLoader.getDefinition("Sound203");
+         this._dic["204"] = ModuleLoader.getDefinition("Sound204");
+         this._dic["210"] = ModuleLoader.getDefinition("Sound210");
       }
-      
+
+      private function initII() : void
+      {
+         this._dic["003"] = ModuleLoader.getDefinition("Sound003");
+         this._dic["013"] = ModuleLoader.getDefinition("Sound013");
+         this._dic["016"] = ModuleLoader.getDefinition("Sound016");
+         this._dic["019"] = ModuleLoader.getDefinition("Sound019");
+         this._dic["020"] = ModuleLoader.getDefinition("Sound020");
+         this._dic["029"] = ModuleLoader.getDefinition("Sound029");
+         this._dic["038"] = ModuleLoader.getDefinition("Sound038");
+         this._dic["079"] = ModuleLoader.getDefinition("Sound079");
+         this._dic["089"] = ModuleLoader.getDefinition("Sound089");
+         this._dic["090"] = ModuleLoader.getDefinition("Sound090");
+         this._dic["097"] = ModuleLoader.getDefinition("Sound097");
+         this._dic["157"] = ModuleLoader.getDefinition("Sound157");
+      }
+
       public function checkHasSound(param1:String) : Boolean
       {
          if(this._dic[param1] != null)
@@ -276,7 +296,7 @@ package ddt.manager
          }
          return false;
       }
-      
+
       public function initSound(param1:String) : void
       {
          if(this.checkHasSound(param1))
@@ -285,7 +305,7 @@ package ddt.manager
          }
          this._dic[param1] = ModuleLoader.getDefinition("Sound" + param1);
       }
-      
+
       public function play(param1:String, param2:Boolean = false, param3:Boolean = true, param4:Number = 0) : SoundChannel
       {
          if(this._dic[param1] == null)
@@ -307,12 +327,12 @@ package ddt.manager
          }
          return null;
       }
-      
+
       public function playButtonSound() : void
       {
          this.play("008");
       }
-      
+
       private function playSoundImp(param1:String, param2:Number) : SoundChannel
       {
          var _loc3_:Sound = new this._dic[param1]();
@@ -321,7 +341,7 @@ package ddt.manager
          this._currentSound[param1] = _loc4_;
          return _loc4_;
       }
-      
+
       private function __soundComplete(param1:Event) : void
       {
          var _loc3_:* = null;
@@ -337,7 +357,7 @@ package ddt.manager
             }
          }
       }
-      
+
       public function stop(param1:String) : void
       {
          if(this._currentSound[param1])
@@ -346,7 +366,7 @@ package ddt.manager
             this._currentSound[param1] = null;
          }
       }
-      
+
       public function stopAllSound() : void
       {
          var _loc1_:SoundChannel = null;
@@ -359,12 +379,12 @@ package ddt.manager
          }
          this._currentSound = new Dictionary();
       }
-      
+
       public function isPlaying(param1:String) : Boolean
       {
          return this._currentSound[param1] == null ? Boolean(Boolean(false)) : Boolean(Boolean(true));
       }
-      
+
       public function playMusic(param1:String, param2:Boolean = true, param3:Boolean = false) : void
       {
          this.currentMusicTry = 0;
@@ -377,7 +397,7 @@ package ddt.manager
             this.playMusicImp([param1],param2);
          }
       }
-      
+
       private function playMusicImp(param1:Array, param2:Boolean) : void
       {
          this._musicLoop = param2;
@@ -389,7 +409,7 @@ package ddt.manager
             this.startMusic();
          }
       }
-      
+
       private function startMusic() : void
       {
          if(!this._currentMusic)
@@ -420,7 +440,7 @@ package ddt.manager
             this._isMusicPlaying = false;
          }
       }
-      
+
       private function startMusicChannel(param1:Number) : void
       {
          var _loc2_:int = this._musicLoop ? 2147483647 : Math.max(0,this._musicPlayList.length - 1);
@@ -431,7 +451,7 @@ package ddt.manager
             this._isMusicPlaying = true;
          }
       }
-      
+
       private function stopMusicChannel() : void
       {
          if(this._musicChannel)
@@ -441,7 +461,7 @@ package ddt.manager
             this._musicChannel = null;
          }
       }
-      
+
       private function __onMusicLoadError(param1:IOErrorEvent) : void
       {
          if(this._musicSound)
@@ -459,7 +479,7 @@ package ddt.manager
             this._isMusicPlaying = false;
          }
       }
-      
+
       private function __onMusicComplete(param1:Event) : void
       {
          this.stopMusicChannel();
@@ -478,7 +498,7 @@ package ddt.manager
             }
          }
       }
-      
+
       public function pauseMusic() : void
       {
          if(this._isMusicPlaying && this._musicChannel)
@@ -488,7 +508,7 @@ package ddt.manager
             this._isMusicPlaying = false;
          }
       }
-      
+
       public function resumeMusic() : void
       {
          if(this._allowMusic && this._currentMusic && !this._isMusicPlaying)
@@ -528,15 +548,15 @@ package ddt.manager
       {
          this.playMusicImp([param1,param1],false);
       }
-      
+
       public function onMetaData(param1:Object) : void
       {
       }
-      
+
       public function onXMPData(param1:Object) : void
       {
       }
-      
+
       public function onCuePoint(param1:Object) : void
       {
       }

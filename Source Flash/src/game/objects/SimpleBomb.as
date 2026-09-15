@@ -380,11 +380,11 @@ package game.objects
          rotation = motionAngle * 180 / Math.PI;
       }
       
-      public function get target() : Point
+      public function get impactTarget() : Point
       {
          if(this._info)
          {
-            return this._info.target;
+            return this._info.impactTarget;
          }
          return null;
       }

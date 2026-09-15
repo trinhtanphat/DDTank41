@@ -61,7 +61,7 @@ package game.view
          return false;
       }
       
-      public function get target() : Point
+      public function get impactTarget() : Point
       {
          var _loc1_:int = 0;
          while(_loc1_ < this.Actions.length)

@@ -178,6 +178,7 @@ package game.view
          addChild(this._vane);
          SoundManager.instance.stopMusic();
          SoundManager.instance.ensureGameSoundEnabled();
+         SoundManager.instance.playGameBackMusic(this._map.info.BackMusic);
          this._arrowUp = new SpringArrowView(DirectionMovingAnimation.UP,this._map);
          this._arrowDown = new SpringArrowView(DirectionMovingAnimation.DOWN,this._map);
          this._arrowLeft = new SpringArrowView(DirectionMovingAnimation.RIGHT,this._map);

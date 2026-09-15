@@ -78,6 +78,8 @@ package activeEvents.view
       
       private var _loader:BaseLoader;
       
+      private var _stateLoader:BaseLoader;
+
       public function ActiveSubContent()
       {
          super();
@@ -118,6 +120,7 @@ package activeEvents.view
       {
          this._info = param1;
          this.updateContainer();
+         this.requestClaimState();
       }
       
       public function get info() : ActiveEventsInfo
@@ -267,8 +270,44 @@ package activeEvents.view
          this._activeGetBtn.enable = false;
       }
       
+      private function requestClaimState() : void
+      {
+         if(this._info == null) return;
+         var _loc1_:URLVariables = RequestVairableCreater.creatWidthKey(true);
+         _loc1_["activeID"] = this._info.ActiveID;
+         if(this._stateLoader != null) this.clearStateLoader();
+         this._stateLoader = LoaderManager.Instance.creatLoader(PathManager.solveRequestPath("UserGetActiveState.ashx"),BaseLoader.REQUEST_LOADER,_loc1_);
+         this._stateLoader.addEventListener(LoaderEvent.LOAD_ERROR,this.__onStateLoadError);
+         this._stateLoader.addEventListener(LoaderEvent.COMPLETE,this.__onStateLoadComplete);
+         LoaderManager.Instance.startLoad(this._stateLoader,true);
+      }
+
+      private function __onStateLoadError(param1:LoaderEvent) : void
+      {
+         this.clearStateLoader();
+      }
+
+      private function __onStateLoadComplete(param1:LoaderEvent) : void
+      {
+         var _loc3_:XML;
+         try { _loc3_ = new XML((param1.target as BaseLoader).content); } catch(e:Error) { this.clearStateLoader(); return; }
+         this.clearStateLoader();
+         if(this._info == null || String(_loc3_.@value).toLowerCase() != "true" || int(_loc3_.@activeID) != this._info.ActiveID) return;
+         this._info.isAttend = String(_loc3_.@isAttend).toLowerCase() == "true";
+         this.updateContainer();
+      }
+
+      private function clearStateLoader() : void
+      {
+         if(this._stateLoader == null) return;
+         this._stateLoader.removeEventListener(LoaderEvent.LOAD_ERROR,this.__onStateLoadError);
+         this._stateLoader.removeEventListener(LoaderEvent.COMPLETE,this.__onStateLoadComplete);
+         this._stateLoader = null;
+      }
+
       private function removeEvent() : void
       {
+         this.clearStateLoader();
          removeEventListener(MouseEvent.CLICK,this._activeGetBtnClick);
          if(this._textInput)
          {

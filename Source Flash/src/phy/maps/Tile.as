@@ -38,6 +38,12 @@ package phy.maps
             _loc4_.tx = param1.x - param3.width / 2;
             _loc4_.ty = param1.y - param3.height / 2;
             bitmapData.draw(_loc5_,_loc4_,null,param3.blendMode);
+            if(param2)
+            {
+               _loc4_.tx = param1.x - param2.width / 2;
+               _loc4_.ty = param1.y - param2.height / 2;
+               bitmapData.draw(param2,_loc4_,null,BlendMode.ERASE);
+            }
             _loc5_.dispose();
          }
       }

@@ -380,6 +380,15 @@ package ddt.manager
          this._currentSound = new Dictionary();
       }
 
+      public function ensureGameSoundEnabled() : void
+      {
+         this.allowSound = true;
+         if(this.soundVolumn <= 0)
+         {
+            this.soundVolumn = 50;
+         }
+      }
+
       public function isPlaying(param1:String) : Boolean
       {
          return this._currentSound[param1] == null ? Boolean(Boolean(false)) : Boolean(Boolean(true));

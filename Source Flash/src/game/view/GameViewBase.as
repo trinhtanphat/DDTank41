@@ -176,7 +176,8 @@ package game.view
          this._vane = new VaneView();
          this._vane.setUpCenter(446,0);
          addChild(this._vane);
-         SoundManager.instance.playGameBackMusic(this._map.info.BackMusic);
+         SoundManager.instance.stopMusic();
+         SoundManager.instance.ensureGameSoundEnabled();
          this._arrowUp = new SpringArrowView(DirectionMovingAnimation.UP,this._map);
          this._arrowDown = new SpringArrowView(DirectionMovingAnimation.DOWN,this._map);
          this._arrowLeft = new SpringArrowView(DirectionMovingAnimation.RIGHT,this._map);

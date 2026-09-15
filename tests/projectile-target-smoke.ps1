@@ -4,6 +4,7 @@ $bomb = Get-Content (Join-Path $root 'Source Flash\src\game\view\Bomb.as') -Raw
 $simple = Get-Content (Join-Path $root 'Source Flash\src\game\objects\SimpleBomb.as') -Raw
 $view = Get-Content (Join-Path $root 'Source Flash\src\game\view\GameView.as') -Raw
 $shock = Get-Content (Join-Path $root 'Source Flash\src\game\animations\ShockMapAnimation.as') -Raw
+$newHand = Get-Content (Join-Path $root 'Source Flash\src\game\actions\newHand\NewHandFightHelpAction.as') -Raw
 if ($bomb -match 'function\s+get\s+target\s*\(') { throw 'Bomb still exposes EventDispatcher-conflicting target getter' }
 if ($bomb -notmatch 'function\s+get\s+impactTarget\s*\(') { throw 'Bomb.impactTarget getter missing' }
 if ($simple -match 'function\s+get\s+target\s*\(') { throw 'SimpleBomb still exposes EventDispatcher-conflicting target getter' }
@@ -14,4 +15,6 @@ if ($view -match 'Bomb\([^\r\n]+\)\.target\b') { throw 'GameView still calls Bom
 if (([regex]::Matches($view, 'Bomb\([^\r\n]+\)\.impactTarget\b')).Count -lt 2) { throw 'GameView impactTarget calls missing' }
 if ($shock -match '_loc4_\.target\b') { throw 'ShockMapAnimation still calls SimpleBomb.target' }
 if (([regex]::Matches($shock, '_loc4_\.impactTarget\b')).Count -lt 2) { throw 'ShockMapAnimation impactTarget calls missing' }
+if ($newHand -match '\.target\b') { throw 'NewHandFightHelpAction still calls Bomb.target' }
+if (([regex]::Matches($newHand, '\.impactTarget\b')).Count -lt 6) { throw 'NewHandFightHelpAction impactTarget calls missing' }
 Write-Host 'PROJECTILE_TARGET_SMOKE=PASS'

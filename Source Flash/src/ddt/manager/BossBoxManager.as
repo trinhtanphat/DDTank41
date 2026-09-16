@@ -331,21 +331,48 @@ package ddt.manager
          }
       }
       
+      private function promoteReadyTimeBox() : Boolean
+      {
+         var _loc1_:TimeBoxInfo = null;
+         var _loc2_:String = null;
+         if(this.timeBoxList == null || !this.startDelayTimeB || this._isTimeBoxOver || this.delaySumTime > 0)
+         {
+            return false;
+         }
+         _loc1_ = this.timeBoxList[this._delayBox];
+         if(_loc1_ == null)
+         {
+            return false;
+         }
+         this.delaySumTime = 0;
+         _loc2_ = this._delayBox + ",time";
+         if(this._boxShowArray.indexOf(_loc2_) == -1 && this._selectedBoxID != _loc2_)
+         {
+            this._boxShowArray.push(_loc2_);
+            SocketManager.Instance.out.sendGetTimeBox(0,_loc1_.Condition);
+         }
+         this.startDelayTimeB = false;
+         this.boxButtonShowType = SmallBoxButton.showTypeOpenbox;
+         return true;
+      }
+
       private function _timeOver(param1:Event) : void
       {
-         if(this.timeBoxList[this._delayBox])
-         {
-            this._boxShowArray.push(this._delayBox + ",time");
-            this.boxButtonShowType = SmallBoxButton.showTypeOpenbox;
-            SocketManager.Instance.out.sendGetTimeBox(0,this.timeBoxList[this._delayBox].Condition);
-         }
+         this.promoteReadyTimeBox();
       }
-      
+
       private function _timeOne(param1:Event) : void
       {
-         --this.delaySumTime;
+         if(this.delaySumTime > 0)
+         {
+            --this.delaySumTime;
+         }
+         if(this.delaySumTime <= 0)
+         {
+            this.promoteReadyTimeBox();
+         }
       }
-      
+
       private function _getShowBoxID(param1:String) : int
       {
          var _loc3_:int = 0;
@@ -367,6 +394,7 @@ package ddt.manager
       {
          var _loc1_:int = 0;
          var _loc2_:AwardsView = null;
+         this.promoteReadyTimeBox();
          if(!this._isBoxShowedNow)
          {
             _loc1_ = this._getShowBoxID("time");

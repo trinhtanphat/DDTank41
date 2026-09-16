@@ -865,7 +865,7 @@ namespace Game.Server.GameUtils
                         num2 = Math.Max(num2, 3);
                     }
                 }
-                if (strengthenLevel == 15)
+                if (strengthenLevel >= 15)
                 {
                     if (itemAt.Template.CategoryID == 1 || itemAt.Template.CategoryID == 5)
                     {

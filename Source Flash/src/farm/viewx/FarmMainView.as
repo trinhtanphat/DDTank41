@@ -52,6 +52,7 @@ package farm.viewx
    import petsBag.view.AdoptPetsGuideView;
    import petsBag.view.AdoptPetsView;
    import trainer.data.ArrowType;
+   import treasure.controller.TreasureManager;
    
    public class FarmMainView extends Sprite implements Disposeable
    {
@@ -493,6 +494,7 @@ package farm.viewx
       
       private function __goTreasureBtn(param1:MouseEvent) : void
       {
+         TreasureManager.instance.show();
       }
       
       private function __arrangeBackHandler(param1:FarmEvent) : void

@@ -29,12 +29,15 @@ package ddt.view.bossbox
       
       public function setTimeOnMinute(param1:int) : void
       {
+         this._time.stop();
+         this._time.removeEventListener(TimerEvent.TIMER,this._timer);
+         this._time.removeEventListener(TimerEvent.TIMER_COMPLETE,this._timerComplete);
          this._count = param1 * 60 * 1000 / this._stepSecond;
          this._time.repeatCount = this._count;
          this._time.reset();
-         this._time.start();
          this._time.addEventListener(TimerEvent.TIMER,this._timer);
          this._time.addEventListener(TimerEvent.TIMER_COMPLETE,this._timerComplete);
+         this._time.start();
       }
       
       private function _timer(param1:TimerEvent) : void

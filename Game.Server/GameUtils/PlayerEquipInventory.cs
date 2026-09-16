@@ -836,44 +836,44 @@ namespace Game.Server.GameUtils
                 {
                     if (itemAt.Template.CategoryID == 1 || itemAt.Template.CategoryID == 5)
                     {
-                        num = ((num <= 1) ? 1 : num);
+                        num = Math.Max(num, 1);
                     }
                     if (itemAt.Template.CategoryID == 7 || itemAt.Template.CategoryID == 27)
                     {
-                        num2 = ((num2 <= 1) ? 1 : num2);
+                        num2 = Math.Max(num2, 1);
                     }
                 }
                 if (strengthenLevel >= 9 && strengthenLevel <= 11)
                 {
                     if (itemAt.Template.CategoryID == 1 || itemAt.Template.CategoryID == 5)
                     {
-                        num = ((num > 1) ? num : 2);
+                        num = Math.Max(num, 2);
                     }
                     if (itemAt.Template.CategoryID == 7 || itemAt.Template.CategoryID == 27)
                     {
-                        num2 = ((num2 > 1) ? num2 : 2);
+                        num2 = Math.Max(num2, 2);
                     }
                 }
                 if (strengthenLevel >= 12 && strengthenLevel <= 14)
                 {
                     if (itemAt.Template.CategoryID == 1 || itemAt.Template.CategoryID == 5)
                     {
-                        num = ((num > 1) ? num : 3);
+                        num = Math.Max(num, 3);
                     }
                     if (itemAt.Template.CategoryID == 7 || itemAt.Template.CategoryID == 27)
                     {
-                        num2 = ((num2 > 1) ? num2 : 3);
+                        num2 = Math.Max(num2, 3);
                     }
                 }
                 if (strengthenLevel == 15)
                 {
                     if (itemAt.Template.CategoryID == 1 || itemAt.Template.CategoryID == 5)
                     {
-                        num = ((num > 1) ? num : 4);
+                        num = Math.Max(num, 4);
                     }
                     if (itemAt.Template.CategoryID == 7 || itemAt.Template.CategoryID == 27)
                     {
-                        num2 = ((num2 > 1) ? num2 : 4);
+                        num2 = Math.Max(num2, 4);
                     }
                 }
                 if (itemAt.isGold)

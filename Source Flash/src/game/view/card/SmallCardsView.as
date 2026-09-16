@@ -40,7 +40,7 @@ package game.view.card
       
       public static const SMALL_CARD_REQUEST_CARD:uint = 100;
       
-      public static const SMALL_CARD_VIEW_TIME:uint = 1;
+      public static const SMALL_CARD_VIEW_TIME:uint = 4;
       
       public static const ON_ALL_COMPLETE_CNT:uint = 2;
        
@@ -55,6 +55,8 @@ package game.view.card
       
       protected var _resultCards:Array;
       
+      protected var _smallShowCardInfos:Array;
+
       protected var _selectedCnt:int;
       
       protected var _selectCompleted:Boolean;
@@ -67,7 +69,7 @@ package game.view.card
       
       protected var _cardColumns:int = 3;
       
-      protected var _viewTime:int = 1;
+      protected var _viewTime:int = SMALL_CARD_VIEW_TIME;
       
       protected var _timerForView:Timer;
       
@@ -94,6 +96,7 @@ package game.view.card
          this._gameInfo = GameManager.Instance.Current;
          this._roomInfo = RoomManager.Instance.current;
          this._resultCards = this._gameInfo.resultCard.concat();
+         this._smallShowCardInfos = [];
          this._title = ComponentFactory.Instance.creatBitmap("asset.takeoutCard.TitleBitmap");
          this._countDownView = new CardCountDown();
          PositionUtils.setPos(this._countDownView,"takeoutCard.SmallCardViewCountDownPos");
@@ -123,6 +126,10 @@ package game.view.card
             this._countDownView.addEventListener(Event.COMPLETE,this.__countDownComplete);
          }
          SocketManager.Instance.addEventListener(CrazyTankSocketEvent.GAME_TAKE_OUT,this.__takeOut);
+         if(this._cardCnt == SMALL_CARD_CNT)
+         {
+            SocketManager.Instance.addEventListener(CrazyTankSocketEvent.SHOW_CARDS,this.__showAllSmallCards);
+         }
       }
       
       protected function removeEvents() : void
@@ -133,6 +140,10 @@ package game.view.card
             this._countDownView.removeEventListener(Event.COMPLETE,this.__countDownComplete);
          }
          SocketManager.Instance.removeEventListener(CrazyTankSocketEvent.GAME_TAKE_OUT,this.__takeOut);
+         if(this._cardCnt == SMALL_CARD_CNT)
+         {
+            SocketManager.Instance.removeEventListener(CrazyTankSocketEvent.SHOW_CARDS,this.__showAllSmallCards);
+         }
          this._timerForView.removeEventListener(TimerEvent.TIMER_COMPLETE,this.__timerForViewComplete);
       }
       
@@ -215,6 +226,46 @@ package game.view.card
          }
       }
       
+      protected function __showAllSmallCards(param1:CrazyTankSocketEvent) : void
+      {
+         var _loc2_:PackageIn = param1.pkg;
+         var _loc3_:int = _loc2_.readInt();
+         this._smallShowCardInfos = [];
+         var _loc4_:uint = 0;
+         var _loc5_:Object = null;
+         while(_loc4_ < _loc3_)
+         {
+            _loc5_ = new Object();
+            _loc5_.index = _loc2_.readByte();
+            _loc5_.templateID = _loc2_.readInt();
+            _loc5_.count = _loc2_.readInt();
+            this._smallShowCardInfos.push(_loc5_);
+            _loc4_++;
+         }
+         this.__disabledAllCards();
+         if(this._countDownView)
+         {
+            this._countDownView.removeEventListener(Event.COMPLETE,this.__countDownComplete);
+         }
+         this._onAllComplete = ON_ALL_COMPLETE_CNT;
+         this.showRemainingCards();
+      }
+
+      protected function showRemainingCards() : void
+      {
+         var _loc1_:uint = 0;
+         while(this._smallShowCardInfos && _loc1_ < this._smallShowCardInfos.length)
+         {
+            if(uint(this._smallShowCardInfos[_loc1_].index) < this._cards.length)
+            {
+               this._cards[uint(this._smallShowCardInfos[_loc1_].index)].play(null,int(this._smallShowCardInfos[_loc1_].templateID),this._smallShowCardInfos[_loc1_].count,false);
+            }
+            _loc1_++;
+         }
+         this._timerForView.reset();
+         this._timerForView.start();
+      }
+
       protected function __takeOut(param1:CrazyTankSocketEvent) : void
       {
          var _loc2_:PackageIn = null;
@@ -318,6 +369,7 @@ package game.view.card
          this._gameInfo = null;
          this._roomInfo = null;
          this._resultCards = null;
+         this._smallShowCardInfos = null;
          this._countDownView = null;
          if(parent)
          {

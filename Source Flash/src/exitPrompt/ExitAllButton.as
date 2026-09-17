@@ -72,7 +72,7 @@ package exitPrompt
          this._emailMissionInfoText = ComponentFactory.Instance.creat("ExitPromptFrame.BtInfoTextIII");
          this._emailBt.addChild(this._emailMissionInfoText);
          this._emailBt.mouseChildren = false;
-         this._emailBt.mouseEnabled = false;
+         this._emailBt.mouseEnabled = true;
          addChild(this._dayMissionSprite);
          addChild(this._actMissionSprite);
          addChild(this._dayMissionBt);
@@ -154,6 +154,7 @@ package exitPrompt
       {
          this._dayMissionBt.addEventListener(MouseEvent.CLICK,this._clickDayBt);
          this._actMissionBt.addEventListener(MouseEvent.CLICK,this._clickActBt);
+         this._emailBt.addEventListener(MouseEvent.CLICK,this._clickEmailBt);
       }
       
       private function _clickDayBt(param1:MouseEvent = null) : void
@@ -202,6 +203,14 @@ package exitPrompt
          this._order();
       }
       
+      private function _clickEmailBt(param1:MouseEvent = null) : void
+      {
+         if(param1 != null)
+         {
+            SoundManager.instance.play("008");
+         }
+      }
+
       private function _textAnalyz0(param1:String, param2:int) : String
       {
          return param1.replace(/r/g," " + String(param2) + " ");
@@ -228,6 +237,7 @@ package exitPrompt
          }
          if(this._emailBt)
          {
+            this._emailBt.removeEventListener(MouseEvent.CLICK,this._clickEmailBt);
             ObjectUtils.disposeObject(this._emailBt);
          }
          if(this._dayMissionInfoText)

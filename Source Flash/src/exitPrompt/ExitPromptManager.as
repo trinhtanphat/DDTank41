@@ -6,6 +6,7 @@ package exitPrompt
    import ddt.manager.TaskManager;
    import flash.events.Event;
    import flash.external.ExternalInterface;
+   import flash.system.fscommand;
    
    public class ExitPromptManager
    {
@@ -57,13 +58,20 @@ package exitPrompt
             this._exitPromptView.dispose();
          }
          this._exitPromptView = null;
-         if(DesktopManager.Instance.isDesktop)
+         if(ExternalInterface.available)
          {
-            ExternalInterface.call("ExitGameToLogin",this._isExitToLogin,PathManager.solveLogin());
+            if(DesktopManager.Instance.isDesktop)
+            {
+               ExternalInterface.call("ExitGameToLogin",this._isExitToLogin,PathManager.solveLogin());
+            }
+            else
+            {
+               ExternalInterface.call("closeWindow",this._isExitToLogin,PathManager.solveLogin());
+            }
          }
-         else if(ExternalInterface.available)
+         else
          {
-            ExternalInterface.call("closeWindow",this._isExitToLogin,PathManager.solveLogin());
+            fscommand("quit");
          }
       }
       

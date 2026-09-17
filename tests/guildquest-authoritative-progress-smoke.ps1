@@ -13,4 +13,4 @@ $body = $caseMatch.Groups['body'].Value
 $guard = 'if\(PlayerManager\.Instance\.Self\.ConsortiaID <= 0\)\s*\{\s*_loc4_ = 0;\s*\}\s*break;'
 if ($body -notmatch $guard) { throw 'Guild quest progress must stay incomplete when the player has no guild.' }
 if ($body -match 'memberList|UseOffer|consortiaInfo') { throw 'Guild quest progress must not override server progress from stale guild caches.' }
-Write-Output 'GUILDQUEST_MEMBERSHIP_UI_SMOKE=PASS'
+Write-Output 'GUILDQUEST_AUTHORITATIVE_PROGRESS_SMOKE=PASS'

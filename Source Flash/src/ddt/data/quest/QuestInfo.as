@@ -429,42 +429,12 @@ package ddt.data.quest
                _loc4_ = !!_loc2_.IsMarried ? int(int(1)) : int(int(0));
                break;
             case 18:
+               // Guild quest progress from the server is authoritative.  Client guild
+               // member/building caches can survive a leave/reset and must not turn a
+               // server-incomplete quest into a claimable one.
                if(PlayerManager.Instance.Self.ConsortiaID <= 0)
                {
                   _loc4_ = 0;
-                  break;
-               }
-               switch(_loc3_.param)
-               {
-                  case 0:
-                     if(ConsortionModelControl.Instance.model.memberList.length > 0)
-                     {
-                        _loc4_ = ConsortionModelControl.Instance.model.memberList.length;
-                     }
-                     break;
-                  case 1:
-                     if(PlayerManager.Instance.Self.UseOffer)
-                     {
-                        _loc4_ = PlayerManager.Instance.Self.UseOffer;
-                     }
-                     break;
-                  case 2:
-                     if(PlayerManager.Instance.Self.consortiaInfo.SmithLevel)
-                     {
-                        _loc4_ = PlayerManager.Instance.Self.consortiaInfo.SmithLevel;
-                     }
-                     break;
-                  case 3:
-                     if(PlayerManager.Instance.Self.consortiaInfo.ShopLevel)
-                     {
-                        _loc4_ = PlayerManager.Instance.Self.consortiaInfo.ShopLevel;
-                     }
-                     break;
-                  case 4:
-                     if(PlayerManager.Instance.Self.consortiaInfo.StoreLevel)
-                     {
-                        _loc4_ = PlayerManager.Instance.Self.consortiaInfo.StoreLevel;
-                     }
                }
                break;
             case 20:

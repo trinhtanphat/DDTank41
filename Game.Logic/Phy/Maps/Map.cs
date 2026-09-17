@@ -101,49 +101,62 @@ namespace Game.Logic.Phy.Maps
 			return true;
 		}
 
-		public Point FindYLineNotEmptyPointDown(int x, int y, int h)
-		{
-			x = ((x >= 0) ? ((x >= _bound.Width) ? (_bound.Width - 1) : x) : 0);
-			y = ((y >= 0) ? y : 0);
-			h = ((y + h >= _bound.Height) ? (_bound.Height - y - 1) : h);
-			int num = 0;
-			while (true)
-			{
-				if (num < h)
-				{
-					if (!IsEmpty(x - 1, y) || !IsEmpty(x + 1, y))
-					{
-						break;
-					}
-					y++;
-					num++;
-					continue;
-				}
-				return Point.Empty;
-			}
-			return new Point(x, y);
-		}
+		        private bool HasCharacterSupport(int x, int y)
+        {
+            if (!IsEmpty(x, y))
+            {
+                return true;
+            }
+
+            bool left = x > 0 && !IsEmpty(x - 1, y);
+            bool right = x + 1 < _bound.Width && !IsEmpty(x + 1, y);
+            return left && right;
+        }
+
+        public Point FindYLineNotEmptyPointDown(int x, int y, int h)
+        {
+            x = x < 0 ? 0 : (x >= _bound.Width ? _bound.Width - 1 : x);
+            y = y < 0 ? 0 : y;
+            if (y >= _bound.Height || h <= 0)
+            {
+                return Point.Empty;
+            }
+
+            h = Math.Min(h, _bound.Height - y);
+            for (int offset = 0; offset < h; offset++, y++)
+            {
+                if (HasCharacterSupport(x, y))
+                {
+                    return new Point(x, y);
+                }
+            }
+            return Point.Empty;
+        }
 
 		public Point FindYLineNotEmptyPointDown(int x, int y)
 		{
 			return FindYLineNotEmptyPointDown(x, y, _bound.Height);
 		}
 
-		public Point FindYLineNotEmptyPointUp(int x, int y, int h)
-		{
-			x = ((x >= 0) ? ((x >= _bound.Width) ? _bound.Width : x) : 0);
-			y = ((y >= 0) ? y : 0);
-			h = ((y + h >= _bound.Height) ? (_bound.Height - y) : h);
-			for (int index = 0; index < h; index++)
-			{
-				if (!IsEmpty(x - 1, y) || !IsEmpty(x + 1, y))
-				{
-					return new Point(x, y);
-				}
-				y--;
-			}
-			return Point.Empty;
-		}
+		        public Point FindYLineNotEmptyPointUp(int x, int y, int h)
+        {
+            x = x < 0 ? 0 : (x >= _bound.Width ? _bound.Width - 1 : x);
+            if (_bound.Height <= 0 || h <= 0)
+            {
+                return Point.Empty;
+            }
+
+            y = y < 0 ? 0 : (y >= _bound.Height ? _bound.Height - 1 : y);
+            h = Math.Min(h, y + 1);
+            for (int offset = 0; offset < h; offset++, y--)
+            {
+                if (HasCharacterSupport(x, y))
+                {
+                    return new Point(x, y);
+                }
+            }
+            return Point.Empty;
+        }
 
 		public Point FindNextWalkPoint(int x, int y, int direction, int stepX, int stepY)
 		{
@@ -152,11 +165,11 @@ namespace Game.Logic.Phy.Maps
 				return Point.Empty;
 			}
 			int x2 = x + direction * stepX;
-			if (x2 < 0 || x2 > _bound.Width)
+			if (x2 < 0 || x2 >= _bound.Width)
 			{
 				return Point.Empty;
 			}
-			Point point = FindYLineNotEmptyPointDown(x2, y - stepY - 1, _bound.Width);
+			Point point = FindYLineNotEmptyPointDown(x2, y - stepY - 1, stepY * 2 + 3);
 			if (point != Point.Empty && Math.Abs(point.Y - y) > stepY)
 			{
 				point = Point.Empty;
@@ -207,7 +220,7 @@ namespace Game.Logic.Phy.Maps
 				return Point.Empty;
 			}
 			int x2 = x + direction * stepX;
-			if (x2 < 0 || x2 > _bound.Width)
+			if (x2 < 0 || x2 >= _bound.Width)
 			{
 				return Point.Empty;
 			}

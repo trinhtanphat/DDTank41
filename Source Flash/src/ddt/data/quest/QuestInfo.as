@@ -429,6 +429,11 @@ package ddt.data.quest
                _loc4_ = !!_loc2_.IsMarried ? int(int(1)) : int(int(0));
                break;
             case 18:
+               if(PlayerManager.Instance.Self.ConsortiaID <= 0)
+               {
+                  _loc4_ = 0;
+                  break;
+               }
                switch(_loc3_.param)
                {
                   case 0:

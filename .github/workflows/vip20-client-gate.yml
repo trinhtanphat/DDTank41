@@ -1,0 +1,23 @@
+name: VIP20 client gate
+
+on:
+  pull_request:
+    paths:
+      - 'Source Flash/src/ddt/manager/ServerConfigManager.as'
+      - 'Source Flash/src/vip/view/VipFrameHead.as'
+      - 'Source Flash/src/ddt/view/common/VipLevelIcon.as'
+      - 'Source Flash/src/ddt/manager/GameSocketOut.as'
+      - 'Source Flash/src/vip/VipController.as'
+      - 'Source Flash/src/vip/view/GiveYourselfOpenView.as'
+      - 'Source Flash/src/vip/view/RechargeAlertTxt.as'
+      - 'tests/vip20-client-smoke.ps1'
+      - '.github/workflows/vip20-client-gate.yml'
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate VIP20 client invariants
+        shell: pwsh
+        run: ./tests/vip20-client-smoke.ps1

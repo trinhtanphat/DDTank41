@@ -47,7 +47,17 @@ package vip.view
       
       public static var ONE_MONTH_PAY:int = ShopManager.Instance.getMoneyShopItemByTemplateID(11992).getItemPrice(1).moneyValue;
       
-      public static var ONE_YEAR_PAY:int = ShopManager.Instance.getMoneyShopItemByTemplateID(11992).getItemPrice(3).moneyValue;
+      public static var THREE_MONTH_PAY:int = ShopManager.Instance.getMoneyShopItemByTemplateID(11992).getItemPrice(2).moneyValue;
+      
+      public static var SIX_MONTH_PAY:int = ShopManager.Instance.getMoneyShopItemByTemplateID(11992).getItemPrice(3).moneyValue;
+      
+      public static var ONE_YEAR_PAY:int = SIX_MONTH_PAY * 2;
+      
+      public static const GOLD_PER_XU:int = 1000;
+      
+      public static const PAY_WITH_XU:int = 0;
+      
+      public static const PAY_WITH_GOLD:int = 1;
       
       public static var millisecondsPerDay:int = 1000 * 60 * 60 * 24;
        
@@ -69,6 +79,12 @@ package vip.view
       private const VIP_LEVEL8:String = "112119";
       
       private const VIP_LEVEL9:String = "112120";
+      
+      private const VIP_LEVEL10:String = "112204";
+      
+      private const VIP_LEVEL11:String = "112205";
+      
+      private const VIP_LEVEL12:String = "112206";
       
       private var _vipChestsArr:Array;
       
@@ -112,6 +128,8 @@ package vip.view
       
       protected var _otherInput:TextInput;
       
+      protected var _goldModeBtn:SelectedCheckButton;
+      
       protected var _money:FilterFrameText;
       
       protected var _monthNum:FilterFrameText;
@@ -136,11 +154,21 @@ package vip.view
       
       protected var payNum:int = 0;
       
+      protected var basePayNum:int = 0;
+      
       protected var time:String = "";
+      
+      private var _paymentMode:int = PAY_WITH_XU;
       
       public function GiveYourselfOpenView()
       {
-         this._vipChestsArr = [this.VIP_LEVEL1,this.VIP_LEVEL2,this.VIP_LEVEL3,this.VIP_LEVEL4,this.VIP_LEVEL5,this.VIP_LEVEL6,this.VIP_LEVEL7,this.VIP_LEVEL8,this.VIP_LEVEL9];
+         this._vipChestsArr = [
+            this.VIP_LEVEL1,this.VIP_LEVEL2,this.VIP_LEVEL3,this.VIP_LEVEL4,this.VIP_LEVEL5,
+            this.VIP_LEVEL6,this.VIP_LEVEL7,this.VIP_LEVEL8,this.VIP_LEVEL9,
+            this.VIP_LEVEL10,this.VIP_LEVEL11,this.VIP_LEVEL12,
+            this.VIP_LEVEL12,this.VIP_LEVEL12,this.VIP_LEVEL12,this.VIP_LEVEL12,
+            this.VIP_LEVEL12,this.VIP_LEVEL12,this.VIP_LEVEL12,this.VIP_LEVEL12
+         ];
          super();
          this._init();
       }
@@ -213,6 +241,9 @@ package vip.view
       {
          this._money = ComponentFactory.Instance.creat("GiveYourselfOpenView.money");
          this._otherInput = ComponentFactory.Instance.creat("GiveYourselfOpenView.otherText");
+         this._goldModeBtn = ComponentFactory.Instance.creatComponentByStylename("GiveYourselfOpenView.other");
+         this._goldModeBtn.text = "Dùng Vàng";
+         this._goldModeBtn.selected = false;
          this._monthNum = ComponentFactory.Instance.creat("GiveYourselfOpenView.monthNum");
          this._showPayMoney = ComponentFactory.Instance.creat("GiveYourselfOpenView.showPayMoneyTxt");
          this._yearDiscountTxt = ComponentFactory.Instance.creatComponentByStylename("GiveYourselfOpenView.yearDiscountTxt");
@@ -224,13 +255,16 @@ package vip.view
          this._yearDiscountTxt.text = LanguageMgr.GetTranslation("ddt.vip.vipView.yearDiscountText");
          addChild(this._otherInput);
          addChild(this._money);
+         this._goldModeBtn.x = this._money.x + this._money.width + 8;
+         this._goldModeBtn.y = this._money.y - 4;
+         addChild(this._goldModeBtn);
          addChild(this._monthNum);
          addChild(this._openVipBtn);
          addChild(this._renewalVipBtn);
          addChild(this._rewardBtn);
          addChild(this._yearDiscountTxt);
          this._showPayMoneyBG.addChild(this._showPayMoney);
-         this._money.text = PlayerManager.Instance.Self.Money + LanguageMgr.GetTranslation("money");
+         this.updateBalanceText();
          this._otherInput.textField.restrict = "0-9";
          this._otherInput.maxChars = 2;
          this._monthNum.text = LanguageMgr.GetTranslation("ddt.vip.vipView.months");
@@ -289,6 +323,7 @@ package vip.view
          this._openVipBtn.addEventListener(MouseEvent.CLICK,this.__openVip);
          this._renewalVipBtn.addEventListener(MouseEvent.CLICK,this.__openVip);
          this._rewardBtn.addEventListener(MouseEvent.CLICK,this.__reward);
+         this._goldModeBtn.addEventListener(MouseEvent.CLICK,this.__togglePaymentMode);
          PlayerManager.Instance.Self.addEventListener(PlayerPropertyEvent.PROPERTY_CHANGE,this.__propertyChange);
       }
       
@@ -301,6 +336,7 @@ package vip.view
          this._openVipBtn.removeEventListener(MouseEvent.CLICK,this.__openVip);
          this._renewalVipBtn.removeEventListener(MouseEvent.CLICK,this.__openVip);
          this._rewardBtn.removeEventListener(MouseEvent.CLICK,this.__reward);
+         this._goldModeBtn.removeEventListener(MouseEvent.CLICK,this.__togglePaymentMode);
          PlayerManager.Instance.Self.removeEventListener(PlayerPropertyEvent.PROPERTY_CHANGE,this.__propertyChange);
       }
       
@@ -418,15 +454,28 @@ package vip.view
       
       private function __propertyChange(param1:PlayerPropertyEvent) : void
       {
-         if(param1.changedProperties["Money"])
+         if(param1.changedProperties["Money"] || param1.changedProperties["Gold"])
          {
-            this._money.text = PlayerManager.Instance.Self.Money + LanguageMgr.GetTranslation("money");
+            this.updateBalanceText();
          }
          if(param1.changedProperties["isVip"] || param1.changedProperties["canTakeVipReward"])
          {
             this.showOpenOrRenewal();
             this.rewardBtnCanUse();
          }
+      }
+      
+      private function updateBalanceText() : void
+      {
+         this._money.text = "Xu: " + PlayerManager.Instance.Self.Money + "  |  Vàng: " + PlayerManager.Instance.Self.Gold;
+      }
+      
+      private function __togglePaymentMode(param1:MouseEvent) : void
+      {
+         SoundManager.instance.play("008");
+         this._paymentMode = this._goldModeBtn.selected ? PAY_WITH_GOLD : PAY_WITH_XU;
+         this._goldModeBtn.text = this._goldModeBtn.selected ? "Đang dùng Vàng" : "Dùng Vàng";
+         this.upPayMoneyText();
       }
       
       private function __upPayNum(param1:Event) : void
@@ -477,7 +526,12 @@ package vip.view
             BaglockedManager.Instance.show();
             return;
          }
-         if(PlayerManager.Instance.Self.Money < this.payNum)
+         if(this._paymentMode == PAY_WITH_GOLD && PlayerManager.Instance.Self.Gold < this.payNum)
+         {
+            MessageTipManager.getInstance().show("Không đủ Vàng.");
+            return;
+         }
+         if(this._paymentMode == PAY_WITH_XU && PlayerManager.Instance.Self.Money < this.payNum)
          {
             this._moneyConfirm = AlertManager.Instance.simpleAlert(LanguageMgr.GetTranslation("AlertDialog.Info"),LanguageMgr.GetTranslation("tank.view.comon.lack"),LanguageMgr.GetTranslation("ok"),LanguageMgr.GetTranslation("cancel"),false,false,false,LayerManager.ALPHA_BLOCKGOUND);
             this._moneyConfirm.moveEnable = false;
@@ -489,7 +543,7 @@ package vip.view
             MessageTipManager.getInstance().show(LanguageMgr.GetTranslation("ddt.vip.vipView.checkOtherInput"));
             return;
          }
-         var _loc2_:String = LanguageMgr.GetTranslation("ddt.vip.vipView.confirmforSelf",this.time,this.payNum);
+         var _loc2_:String = "Gia hạn VIP " + this.time + " với " + this.payNum + (this._paymentMode == PAY_WITH_GOLD ? " Vàng" : " Xu") + "?";
          this._confirmFrame = AlertManager.Instance.simpleAlert(LanguageMgr.GetTranslation("ddt.vip.vipFrame.ConfirmTitle"),_loc2_,LanguageMgr.GetTranslation("ok"),LanguageMgr.GetTranslation("cancel"),false,true,true,LayerManager.BLCAK_BLOCKGOUND);
          this._confirmFrame.moveEnable = false;
          this._confirmFrame.addEventListener(FrameEvent.RESPONSE,this.__confirm);
@@ -556,7 +610,7 @@ package vip.view
       
       protected function send() : void
       {
-         VipController.instance.sendOpenVip(PlayerManager.Instance.Self.NickName,this.days);
+         VipController.instance.sendOpenVip(PlayerManager.Instance.Self.NickName,this.days,this._paymentMode);
       }
       
       private function __focusOtherInput(param1:MouseEvent) : void
@@ -579,42 +633,58 @@ package vip.view
       
       protected function upPayMoneyText() : void
       {
+         this.basePayNum = 0;
          this.payNum = 0;
          this.time = "";
          switch(this._secondBtnGroup.selectIndex)
          {
             case 0:
-               this.payNum = ONE_MONTH_PAY;
-               this.time = "1 mes";
+               this.basePayNum = ONE_MONTH_PAY;
+               this.time = "1 tháng";
                break;
             case 1:
-               this.payNum = ONE_MONTH_PAY * 3;
-               this.time = "3 mes";
+               this.basePayNum = THREE_MONTH_PAY;
+               this.time = "3 tháng";
                break;
             case 2:
-               this.payNum = ONE_MONTH_PAY * 6;
-               this.time = "6 mes";
+               this.basePayNum = SIX_MONTH_PAY;
+               this.time = "6 tháng";
                break;
             case 3:
-               this.payNum = ONE_YEAR_PAY;
-               this.time = "1 Año";
+               this.basePayNum = ONE_YEAR_PAY;
+               this.time = "1 năm";
                break;
             case 4:
-               this.payNum = ONE_MONTH_PAY * parseInt(this._otherInput.text);
-               this.time = this._otherInput.text + " mes";
+               var months:int = parseInt(this._otherInput.text);
+               if(isNaN(months))
+               {
+                  months = 0;
+               }
+               this.basePayNum = ONE_MONTH_PAY * months;
+               this.time = months + " tháng";
          }
-         this._showPayMoney.htmlText = LanguageMgr.GetTranslation("ddt.vip.vipView.payMoneyShow",this.payNum);
+         this.payNum = this._paymentMode == PAY_WITH_GOLD ? this.basePayNum * GOLD_PER_XU : this.basePayNum;
+         this._showPayMoney.htmlText = this.payNum + (this._paymentMode == PAY_WITH_GOLD ? " Vàng" : " Xu");
       }
       
       private function _getStrArr(param1:DictionaryData) : Array
       {
-         return param1[this._vipChestsArr[PlayerManager.Instance.Self.VIPLevel - 1]];
+         var index:int = Math.max(0,Math.min(this._vipChestsArr.length - 1,PlayerManager.Instance.Self.VIPLevel - 1));
+         return param1[this._vipChestsArr[index]];
       }
       
       private function getVIPInfoTip(param1:DictionaryData) : Array
       {
-         var _loc2_:Array = null;
-         return PlayerManager.Instance.Self.VIPLevel == 9 ? [ItemManager.Instance.getTemplateById(int(this._vipChestsArr[PlayerManager.Instance.Self.VIPLevel - 1])),ItemManager.Instance.getTemplateById(int(this._vipChestsArr[PlayerManager.Instance.Self.VIPLevel - 2]))] : [ItemManager.Instance.getTemplateById(int(this._vipChestsArr[PlayerManager.Instance.Self.VIPLevel - 1])),ItemManager.Instance.getTemplateById(int(this._vipChestsArr[PlayerManager.Instance.Self.VIPLevel]))];
+         var index:int = Math.max(0,Math.min(this._vipChestsArr.length - 1,PlayerManager.Instance.Self.VIPLevel - 1));
+         var nextIndex:int = Math.min(this._vipChestsArr.length - 1,index + 1);
+         if(index == this._vipChestsArr.length - 1)
+         {
+            nextIndex = Math.max(0,index - 1);
+         }
+         return [
+            ItemManager.Instance.getTemplateById(int(this._vipChestsArr[index])),
+            ItemManager.Instance.getTemplateById(int(this._vipChestsArr[nextIndex]))
+         ];
       }
       
       public function dispose() : void
@@ -651,6 +721,11 @@ package vip.view
             ObjectUtils.disposeObject(this._otherInput);
          }
          this._otherInput = null;
+         if(this._goldModeBtn)
+         {
+            ObjectUtils.disposeObject(this._goldModeBtn);
+         }
+         this._goldModeBtn = null;
          if(this._openVipBtn)
          {
             ObjectUtils.disposeObject(this._openVipBtn);

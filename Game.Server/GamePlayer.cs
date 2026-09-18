@@ -1267,35 +1267,46 @@ public class GamePlayer : IGamePlayer
         Out.SendUpdatePublicPlayer(PlayerCharacter, MatchInfo, Extra.Info);
     }
 
+    private static int GetVipMaxLevel()
+    {
+        List<int> thresholds = GameProperties.VIPExp();
+        return thresholds == null || thresholds.Count == 0 ? 1 : thresholds.Count;
+    }
+
     public void AddExpVip(int value)
     {
-        List<int> exp = GameProperties.VIPExp();
-        m_character.VIPExp += value;
-        for (int i = 0; i < exp.Count; i++)
+        List<int> thresholds = GameProperties.VIPExp();
+        if (thresholds == null || thresholds.Count == 0)
         {
-            int vipExp = m_character.VIPExp;
-            int level = m_character.VIPLevel;
-            if (level == 9)
-            {
-                m_character.VIPExp = exp[8];
-                break;
-            }
-            if (level < 9 && canUpLv(vipExp, level))
-            {
-                m_character.VIPLevel++;
-                if (m_character.VIPLevel >= 7 && PetBag != null)
-                {
-                    PetBag.UpdatePetFiveKillSlot(m_character.VIPLevel);
-                }
-                DailyRecordInfo info = new DailyRecordInfo
-                {
-                    UserID = PlayerCharacter.ID,
-                    Type = 28,
-                    Value = m_character.VIPLevel.ToString()
-                };
-                new PlayerBussiness().AddDailyRecord(info);
-            }
+            return;
         }
+
+        m_character.VIPExp = Math.Max(0, m_character.VIPExp + value);
+        int maxLevel = thresholds.Count;
+
+        while (m_character.VIPLevel < maxLevel && canUpLv(m_character.VIPExp, m_character.VIPLevel))
+        {
+            m_character.VIPLevel++;
+            if (m_character.VIPLevel >= 7 && PetBag != null)
+            {
+                PetBag.UpdatePetFiveKillSlot(m_character.VIPLevel);
+            }
+
+            DailyRecordInfo info = new DailyRecordInfo
+            {
+                UserID = PlayerCharacter.ID,
+                Type = 28,
+                Value = m_character.VIPLevel.ToString()
+            };
+            new PlayerBussiness().AddDailyRecord(info);
+        }
+
+        if (m_character.VIPLevel >= maxLevel)
+        {
+            m_character.VIPLevel = maxLevel;
+            m_character.VIPExp = Math.Min(m_character.VIPExp, thresholds[maxLevel - 1]);
+        }
+
         Extra.UpdateEventCondition((int)NoviceActiveType.UPGRADE_VIP_ACTIVE, PlayerCharacter.VIPLevel);
         if (m_character.IsVIPExpire())
         {
@@ -1306,35 +1317,35 @@ public class GamePlayer : IGamePlayer
     public bool RemoveExpVip(int value)
     {
         bool result = false;
-        List<int> list = GameProperties.VIPExp();
+        List<int> thresholds = GameProperties.VIPExp();
+        if (thresholds == null || thresholds.Count == 0)
+        {
+            return false;
+        }
+
         if (m_character.VIPExp >= value)
         {
             m_character.VIPExp -= value;
             result = true;
         }
-        else if (m_character.VIPExp < value && m_character.VIPExp > 0)
+        else if (m_character.VIPExp > 0)
         {
             m_character.VIPExp = 0;
             result = true;
         }
-        for (int i = 0; i < list.Count; i++)
+
+        while (m_character.VIPLevel > 1 && canDownLv(m_character.VIPExp, m_character.VIPLevel))
         {
-            int vIPExp = m_character.VIPExp;
-            int vIPLevel = m_character.VIPLevel;
-
-            if (vIPLevel > 9 && canDownLv(vIPExp, vIPLevel))
+            m_character.VIPLevel--;
+            DailyRecordInfo info = new DailyRecordInfo
             {
-                m_character.VIPLevel--;
-                DailyRecordInfo info = new DailyRecordInfo
-                {
-                    UserID = PlayerCharacter.ID,
-                    Type = 28,
-                    Value = m_character.VIPLevel.ToString()
-                };
-                new PlayerBussiness().AddDailyRecord(info);
-
-            }
+                UserID = PlayerCharacter.ID,
+                Type = 28,
+                Value = m_character.VIPLevel.ToString()
+            };
+            new PlayerBussiness().AddDailyRecord(info);
         }
+
         return result;
     }
 
@@ -1939,118 +1950,52 @@ public class GamePlayer : IGamePlayer
 
     public int GetVIPNextLevelDaysNeeded(int viplevel, int vipexp)
     {
-        if (viplevel != 0 && vipexp > 0 && viplevel <= 8)
+        List<int> thresholds = GameProperties.VIPExp();
+        if (thresholds == null || thresholds.Count == 0 || viplevel < 1 || viplevel >= thresholds.Count)
         {
-            List<int> list = GameProperties.VIPExp();
-            ShopItemInfo itemVipInfo = ShopMgr.FindShopbyTemplateID((int)Game.Server.Packets.EquipType.VIPCARD);
-            int adddaily = (int)(itemVipInfo.AValue1 / itemVipInfo.AUnit) * 2;
-
-            float result = 0;
-            float vipExpCompared = (float)list[viplevel] - (float)vipexp;//so sánh exp hiện tại với vipexp kế tiếp, listIndex start 0 -> 8 tương đương vipLevel 1 -> 9
-
-            if (PlayerCharacter.typeVIP == 2)
-            {
-                result = vipExpCompared / adddaily;
-            }
-            else if (PlayerCharacter.typeVIP == 1)
-            {
-                result = vipExpCompared / adddaily;
-            }
-
-            if (result < 0)
-            {
-                log.Info("GetVIPNextLevelDaysNeeded bug: compared vipexp > nextVipExp by VipLevel! CharacterID :" + m_character.ID);
-            }
-
             OnVIPUpgrade(m_character.VIPLevel, m_character.VIPExp);
-            return (int)Math.Ceiling(result > 0 ? result : 0);
+            return 0;
         }
+
+        ShopItemInfo itemVipInfo = ShopMgr.FindShopbyTemplateID((int)Game.Server.Packets.EquipType.VIPCARD);
+        if (itemVipInfo == null || itemVipInfo.AUnit <= 0)
+        {
+            OnVIPUpgrade(m_character.VIPLevel, m_character.VIPExp);
+            return 0;
+        }
+
+        int addDaily = (int)(itemVipInfo.AValue1 / itemVipInfo.AUnit) * 2;
+        if (addDaily <= 0)
+        {
+            OnVIPUpgrade(m_character.VIPLevel, m_character.VIPExp);
+            return 0;
+        }
+
+        int remaining = thresholds[viplevel] - Math.Max(0, vipexp);
         OnVIPUpgrade(m_character.VIPLevel, m_character.VIPExp);
-        return 0;
+        return remaining <= 0 ? 0 : (int)Math.Ceiling((double)remaining / addDaily);
     }
 
-    public bool canUpLv(int exp, int _curLv)
+    public bool canUpLv(int exp, int currentLevel)
     {
-        List<int> list = GameProperties.VIPExp();
-        if (exp >= list[0] && _curLv == 0)
-        {
-            return true;
-        }
-        if (exp >= list[1] && _curLv == 1)
-        {
-            return true;
-        }
-        if (exp >= list[2] && _curLv == 2)
-        {
-            return true;
-        }
-        if (exp >= list[3] && _curLv == 3)
-        {
-            return true;
-        }
-        if (exp >= list[4] && _curLv == 4)
-        {
-            return true;
-        }
-        if (exp >= list[5] && _curLv == 5)
-        {
-            return true;
-        }
-        if (exp >= list[6] && _curLv == 6)
-        {
-            return true;
-        }
-        if (exp >= list[7] && _curLv == 7)
-        {
-            return true;
-        }
-        if (exp >= list[8] && _curLv == 8)
-        {
-            return true;
-        }
-        return false;
-    }
-
-    public bool canDownLv(int exp, int _curLv)
-    {
-        List<int> list = GameProperties.VIPExp();
-        if (_curLv == 0 || _curLv == 9)
+        List<int> thresholds = GameProperties.VIPExp();
+        if (thresholds == null || thresholds.Count == 0 || currentLevel < 0 || currentLevel >= thresholds.Count)
         {
             return false;
         }
-        if (exp < list[1] && _curLv == 1)
+
+        return exp >= thresholds[currentLevel];
+    }
+
+    public bool canDownLv(int exp, int currentLevel)
+    {
+        List<int> thresholds = GameProperties.VIPExp();
+        if (thresholds == null || thresholds.Count == 0 || currentLevel <= 1 || currentLevel > thresholds.Count)
         {
-            return true;
+            return false;
         }
-        if (exp < list[2] && _curLv == 2)
-        {
-            return true;
-        }
-        if (exp < list[3] && _curLv == 3)
-        {
-            return true;
-        }
-        if (exp < list[4] && _curLv == 4)
-        {
-            return true;
-        }
-        if (exp < list[5] && _curLv == 5)
-        {
-            return true;
-        }
-        if (exp < list[6] && _curLv == 6)
-        {
-            return true;
-        }
-        if (exp < list[7] && _curLv == 7)
-        {
-            return true;
-        }
-        if (exp < list[8] && _curLv == 8)
-        {
-            return true;
-        }
-        return false;
+
+        return exp < thresholds[currentLevel - 1];
     }
 
     public void ClearCaddyBag()
@@ -3060,17 +3005,20 @@ public class GamePlayer : IGamePlayer
     public bool ChangeDailyExpVip()
     {
         ShopItemInfo itemVipInfo = ShopMgr.FindShopbyTemplateID((int)Game.Server.Packets.EquipType.VIPCARD);
-        if (this.m_character.VIPLevel >= 9)
+        if (itemVipInfo == null || itemVipInfo.AUnit <= 0)
             return false;
-        if (itemVipInfo == null)
-            return false;
+
         int result = (int)(itemVipInfo.AValue1 / itemVipInfo.AUnit);
         if (this.m_character.typeVIP > 0)
         {
-            AddExpVip(result * 2);
-            this.Out.SendOpenVIP(this);
+            if (this.m_character.VIPLevel < GetVipMaxLevel())
+            {
+                AddExpVip(result * 2);
+                this.SendMessage($"Trong thời hạn VIP, bạn nhận được {result * 2} exp VIP mỗi ngày.");
+            }
+
             this.m_character.VIPNextLevelDaysNeeded = this.GetVIPNextLevelDaysNeeded(this.m_character.VIPLevel, this.m_character.VIPExp);
-            this.SendMessage($"Trong thời hạn VIP, bạn nhận được {result * 2} exp VIP mỗi ngày.");
+            this.Out.SendOpenVIP(this);
         }
         else
         {

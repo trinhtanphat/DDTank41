@@ -128,7 +128,7 @@ namespace Bussiness
         [ConfigProperty("TestActive", "TestActive", false)]
 		public static readonly bool TestActive;
 
-        [ConfigProperty("VIPExpForEachLv", "VIPExpForEachLv", "1|2")]
+        [ConfigProperty("VIPExpForEachLv", "VIPExpForEachLv", "0|200|400|800|2000|4000|8000|20000|40000|80000|200000|400000|800000|1200000|1800000|2600000|3600000|4800000|6200000|7800000")]
 		public static readonly string VIPExpForEachLv;
 
         [ConfigProperty("VirtualName", "VirtualName", "Doreamon,Nobita,Xuneo,Xuka")]

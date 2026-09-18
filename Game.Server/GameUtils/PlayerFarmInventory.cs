@@ -252,7 +252,7 @@ namespace Game.Server.GameUtils
 			lock (m_lock)
 			{
 				UserFieldInfo field = m_fields[fieldId];
-				if (field == null || field.SeedID != 0 || !field.IsValidField())
+				if (field == null || field.SeedID != 0)
 				{
 					return false;
 				}

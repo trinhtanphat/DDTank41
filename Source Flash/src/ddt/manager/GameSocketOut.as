@@ -1614,13 +1614,14 @@ package ddt.manager
          this.sendPackage(_loc2_);
       }
       
-      public function sendOpenVip(param1:String, param2:int, param3:int = 0) : void
+      public function sendOpenVip(param1:String, param2:int, param3:Boolean = false, param4:int = 0) : void
       {
-         var _loc4_:PackageOut = new PackageOut(ePackageType.VIP_RENEWAL);
-         _loc4_.writeUTF(param1);
-         _loc4_.writeInt(param2);
-         _loc4_.writeByte(param3);
-         this.sendPackage(_loc4_);
+         var _loc5_:PackageOut = new PackageOut(ePackageType.VIP_RENEWAL);
+         _loc5_.writeUTF(param1);
+         _loc5_.writeInt(param2);
+         _loc5_.writeBoolean(param3);
+         _loc5_.writeByte(param4);
+         this.sendPackage(_loc5_);
       }
       
       public function sendAcademyRegister(param1:int, param2:Boolean, param3:String = null, param4:Boolean = false) : void

@@ -1,0 +1,50 @@
+name: Road runtime bundle
+
+on:
+  push:
+    branches:
+      - "ci/road-runtime-bundle-20260918-1229"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Farm planting regression
+        shell: powershell
+        run: ./tests/farm-planting-regression.ps1
+
+      - name: Ruffle planting regression
+        shell: powershell
+        run: ./tests/farm-ruffle-click-plant-smoke.ps1
+
+      - name: Treasure regression
+        shell: powershell
+        run: ./tests/treasure-server-regression.ps1
+
+      - name: Quest reward regression
+        shell: powershell
+        run: ./tests/quest-reward-delivery-smoke.ps1
+
+      - name: Restore Road.Service
+        shell: powershell
+        run: dotnet restore ./Road.Service/Road.Service.csproj
+
+      - name: Build Road.Service
+        shell: powershell
+        run: dotnet build ./Road.Service/Road.Service.csproj -c Release --no-restore --nologo
+
+      - name: Upload Road runtime
+        uses: actions/upload-artifact@v4
+        with:
+          name: road-runtime-b613471
+          path: Road.Service/bin/Release/net472/**
+          if-no-files-found: error

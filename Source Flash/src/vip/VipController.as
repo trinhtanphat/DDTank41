@@ -206,9 +206,9 @@ package vip
          UIModuleLoader.Instance.removeEventListener(UIModuleEvent.UI_MODULE_COMPLETE,this.__complainShow);
       }
       
-      public function sendOpenVip(param1:String, param2:int, param3:int = 0) : void
+      public function sendOpenVip(param1:String, param2:int, param3:Boolean = false, param4:int = 0) : void
       {
-         SocketManager.Instance.out.sendOpenVip(param1,param2,param3);
+         SocketManager.Instance.out.sendOpenVip(param1,param2,param3,param4);
       }
       
       public function hide() : void

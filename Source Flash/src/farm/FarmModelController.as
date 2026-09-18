@@ -47,7 +47,7 @@ package farm
       public var midAutumnFlag:Boolean;
       
       public var pendingSeedTemplateId:int = 0;
-      
+
       public function FarmModelController()
       {
          super();

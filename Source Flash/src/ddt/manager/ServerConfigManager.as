@@ -16,6 +16,10 @@ package ddt.manager
       
       public static const VIP_EXP_NEEDEDFOREACHLV:String = "VIPExpNeededForEachLv";
       
+      public static const VIP_EXP_FOREACHLV:String = "VIPExpForEachLv";
+      
+      public static const VIP_MAX_LEVEL:String = "VIPMaxLevel";
+      
       public static const HOT_SPRING_EXP:String = "HotSpringExp";
       
       public static const FIRSTRECHARGE_RETURN:String = "FirstChargeReturn";
@@ -89,6 +93,26 @@ package ddt.manager
       public function get VIPExpNeededForEachLv() : Array
       {
          return this.findInfoByName(ServerConfigManager.VIP_EXP_NEEDEDFOREACHLV).Value.split("|");
+      }
+      
+      public function get VIPExpForEachLv() : Array
+      {
+         var info:ServerConfigInfo = this.findInfoByName(ServerConfigManager.VIP_EXP_FOREACHLV);
+         if(info)
+         {
+            return info.Value.split("|");
+         }
+         return this.VIPExpNeededForEachLv;
+      }
+      
+      public function get VIPMaxLevel() : int
+      {
+         var info:ServerConfigInfo = this.findInfoByName(ServerConfigManager.VIP_MAX_LEVEL);
+         if(info)
+         {
+            return Math.max(1,int(info.Value));
+         }
+         return 20;
       }
       
       public function get HotSpringExp() : Array

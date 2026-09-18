@@ -45,7 +45,8 @@ package vip.view
       private function getAlertTxt(param1:int) : String
       {
          var _loc2_:String = "";
-         switch(param1)
+         var displayLevel:int = Math.max(1,Math.min(9,param1));
+         switch(displayLevel)
          {
             case 1:
                _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent1",LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent1Param0")) + "\n";
@@ -129,12 +130,12 @@ package vip.view
                break;
             case 9:
                _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent1",LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent1Param2")) + "\n";
-               _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent2",VipSetting.expTimesVIPRechargeArray[param1 - 1]) + "\n";
+               _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent2",VipSetting.expTimesVIPRechargeArray[displayLevel - 1]) + "\n";
                _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent3",LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent3Param")) + "\n";
                _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent4") + "\n";
                _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent5",LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent5Param")) + "\n";
                _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent6",LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent6Param")) + "\n";
-               _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent7",VipSetting.vipTimesVIPRechargeArray[param1 - 1]) + "\n";
+               _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent7",VipSetting.vipTimesVIPRechargeArray[displayLevel - 1]) + "\n";
                _loc2_ += LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent8",LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent8Param1"),LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent8Param2"),LanguageMgr.GetTranslation("tank.vip.rechargeAlertContent8Param3")) + "\n";
          }
          return _loc2_;
@@ -143,7 +144,8 @@ package vip.view
       private function getAlertTitle(param1:int) : String
       {
          var _loc2_:String = "";
-         switch(param1)
+         var displayLevel:int = Math.max(1,Math.min(9,param1));
+         switch(displayLevel)
          {
             case 1:
             case 2:
@@ -156,7 +158,7 @@ package vip.view
                _loc2_ = LanguageMgr.GetTranslation("tank.vip.rechargeAlertTitle",param1 + 1);
                break;
             case 9:
-               _loc2_ = LanguageMgr.GetTranslation("tank.vip.rechargeAlertEndTitle",param1);
+               _loc2_ = param1 > 9 ? "VIP " + param1 : LanguageMgr.GetTranslation("tank.vip.rechargeAlertEndTitle",param1);
          }
          return _loc2_;
       }

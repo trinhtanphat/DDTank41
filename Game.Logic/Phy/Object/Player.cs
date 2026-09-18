@@ -2675,52 +2675,19 @@ namespace Game.Logic.Phy.Object
             }
         }
 
-        public override void StartMoving()
-        {
-            if (m_map == null)
-            {
-                return;
-            }
-            Point point = m_map.FindYLineNotEmptyPointDown(m_x, m_y);
-            if (point.IsEmpty)
-            {
-                if (m_map.Ground != null)
-                {
-                    m_y = m_map.Ground.Height;
-                }
-            }
-            else
-            {
-                m_x = point.X;
-                m_y = point.Y;
-            }
-            if (point.IsEmpty)
-            {
-                m_syncAtTime = false;
-                Die();
-            }
-        }
-
-        public override void StartMoving(int delay, int speed)
+                public override void StartMoving()
         {
             if (m_map != null)
             {
-                Point point = m_map.FindYLineNotEmptyPointDown(m_x, m_y);
-                if (point.IsEmpty)
-                {
-                    m_y = m_map.Ground.Height;
-                }
-                else
-                {
-                    m_x = point.X;
-                    m_y = point.Y;
-                }
+                base.StartMoving(0, 30);
+            }
+        }
+
+                public override void StartMoving(int delay, int speed)
+        {
+            if (m_map != null)
+            {
                 base.StartMoving(delay, speed);
-                if (point.IsEmpty)
-                {
-                    m_syncAtTime = false;
-                    Die();
-                }
             }
         }
 

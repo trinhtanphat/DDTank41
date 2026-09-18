@@ -1,0 +1,43 @@
+name: Terrain character settle gate
+
+on:
+  pull_request:
+    paths:
+      - "Game.Logic/**"
+      - "tests/terrain-character-settle-smoke.ps1"
+      - ".github/workflows/terrain-character-settle-gate.yml"
+  workflow_dispatch:
+
+jobs:
+  terrain-settle:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Run terrain settle smoke
+        shell: powershell
+        run: ./tests/terrain-character-settle-smoke.ps1
+
+      - name: Restore Game.Logic
+        shell: powershell
+        run: dotnet restore ./Game.Logic/Game.Logic.csproj
+
+      - name: Build Game.Logic
+        shell: powershell
+        run: dotnet build ./Game.Logic/Game.Logic.csproj -c Release --no-restore --nologo
+
+      - name: Upload Game.Logic artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terrain-settle-gamelogic-net472
+          path: |
+            Game.Logic/bin/Release/net472/Game.Logic.dll
+            Game.Logic/bin/Release/net472/Game.Logic.pdb
+          if-no-files-found: error

@@ -196,10 +196,14 @@ package vip.view
       
       private function upView() : void
       {
-         var _loc3_:Date = null;
-         if(PlayerManager.Instance.Self.VIPLevel != 9)
+         var expireDate:Date = null;
+         var level:int = Math.max(1,Math.min(ServerConfigManager.instance.VIPMaxLevel,PlayerManager.Instance.Self.VIPLevel));
+         var maxLevel:int = ServerConfigManager.instance.VIPMaxLevel;
+         var thresholds:Array = ServerConfigManager.instance.VIPExpForEachLv;
+         
+         if(level < maxLevel)
          {
-            this._DueTip.tipData = LanguageMgr.GetTranslation("ddt.vip.dueTime.tip",PlayerManager.Instance.Self.VIPNextLevelDaysNeeded,PlayerManager.Instance.Self.VIPLevel + 1);
+            this._DueTip.tipData = LanguageMgr.GetTranslation("ddt.vip.dueTime.tip",Math.max(0,PlayerManager.Instance.Self.VIPNextLevelDaysNeeded),level + 1);
          }
          else
          {
@@ -228,46 +232,49 @@ package vip.view
             addChild(this._selfName);
             DisplayUtils.removeDisplay(this._vipName);
          }
+         
          this._vipIcon.setInfo(PlayerManager.Instance.Self,true,true);
          this._vipIcon.x = this._selfName.x + this._selfName.textWidth + 15;
          addChild(this._vipIcon);
-         this._selfLevel.text = "LV" + PlayerManager.Instance.Self.VIPLevel;
-         this._nextLevel.text = "LV" + (PlayerManager.Instance.Self.VIPLevel + 1);
+         this._selfLevel.text = "LV" + level;
+         this._nextLevel.text = level < maxLevel ? "LV" + (level + 1) : "";
+         
          if(!this._isVipRechargeShow)
          {
-            _loc3_ = PlayerManager.Instance.Self.VIPExpireDay as Date;
-            this._dueData.text = _loc3_.fullYear + "-" + (_loc3_.month + 1) + "-" + _loc3_.date;
+            expireDate = PlayerManager.Instance.Self.VIPExpireDay as Date;
+            this._dueData.text = expireDate ? expireDate.fullYear + "-" + (expireDate.month + 1) + "-" + expireDate.date : "";
          }
          if(!PlayerManager.Instance.Self.IsVIP && !this._isVipRechargeShow)
          {
             this._dueData.text = "";
          }
-         if(PlayerManager.Instance.Self.VIPLevel == 9)
-         {
-            this._nextLevel.text = "";
-         }
+         
          if(!PlayerManager.Instance.Self.IsVIP && PlayerManager.Instance.Self.VIPExp <= 0)
          {
-            this._dueTime.text = 0 + LanguageMgr.GetTranslation("shop.ShopIIShoppingCarItem.day");
+            this._dueTime.text = "0" + LanguageMgr.GetTranslation("shop.ShopIIShoppingCarItem.day");
          }
          else
          {
-            this._dueTime.text = PlayerManager.Instance.Self.VIPNextLevelDaysNeeded + LanguageMgr.GetTranslation("shop.ShopIIShoppingCarItem.day");
+            this._dueTime.text = Math.max(0,PlayerManager.Instance.Self.VIPNextLevelDaysNeeded) + LanguageMgr.GetTranslation("shop.ShopIIShoppingCarItem.day");
          }
-         var _loc1_:int = 0;
-         var _loc2_:int = 0;
-         if(PlayerManager.Instance.Self.VIPLevel == 9)
+         
+         var progress:int = 0;
+         var required:int = 1;
+         if(level < maxLevel && thresholds && thresholds.length > level)
          {
-            _loc2_ = 1;
-            _loc1_ = 1;
+            var floorExp:int = int(thresholds[level - 1]);
+            var nextExp:int = int(thresholds[level]);
+            var safeExp:int = Math.max(floorExp,PlayerManager.Instance.Self.VIPExp);
+            progress = Math.max(0,safeExp - floorExp);
+            required = Math.max(1,nextExp - floorExp);
          }
          else
          {
-            _loc1_ = PlayerManager.Instance.Self.VIPExp - ServerConfigManager.instance.VIPExpNeededForEachLv[PlayerManager.Instance.Self.VIPLevel - 1];
-            _loc2_ = ServerConfigManager.instance.VIPExpNeededForEachLv[PlayerManager.Instance.Self.VIPLevel] - ServerConfigManager.instance.VIPExpNeededForEachLv[PlayerManager.Instance.Self.VIPLevel - 1];
+            progress = 1;
+            required = 1;
          }
-         this._vipLevelProgress.setProgress(_loc1_,_loc2_);
-         this._vipLevelProgress.labelText = PlayerManager.Instance.Self.VIPExp.toString();
+         this._vipLevelProgress.setProgress(progress,required);
+         this._vipLevelProgress.labelText = level >= maxLevel ? "MAX" : progress + "/" + required;
          this.grayOrLightVIP();
       }
       

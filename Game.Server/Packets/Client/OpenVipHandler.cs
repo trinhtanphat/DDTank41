@@ -7,113 +7,156 @@ using Bussiness.Managers;
 
 namespace Game.Server.Packets.Client
 {
-	[PacketHandler(92, "场景用户离开")]
-	public class OpenVipHandler : IPacketHandler
-	{
-		private int TotalPrice(int renewal)
-		{
-			ShopItemInfo itemVipInfo = ShopMgr.FindShopbyTemplateID((int)EquipType.VIPCARD);
-			if (itemVipInfo == null)
-				return -1;
-            int result = 0;
-			if (renewal == itemVipInfo.AUnit)
-			{
-				result = itemVipInfo.AValue1;
-			}
-			else
-			if (renewal == itemVipInfo.BUnit)
-			{
-				result = itemVipInfo.BValue1;
-			}
-			else
-			if (renewal == itemVipInfo.CUnit)
-			{
-				result = itemVipInfo.CValue1;
-			}
-			else {
-				result = (int)Math.Ceiling((float)itemVipInfo.AValue1 * (float)renewal / itemVipInfo.AUnit);
-			}
-                    
-            return result;
+    [PacketHandler(92, "场景用户离开")]
+    public class OpenVipHandler : IPacketHandler
+    {
+        private const int PayWithXu = 0;
+        private const int PayWithGold = 1;
+        private const int GoldPerXu = 1000;
+
+        private int TotalPrice(int renewal)
+        {
+            ShopItemInfo itemVipInfo = ShopMgr.FindShopbyTemplateID((int)EquipType.VIPCARD);
+            if (itemVipInfo == null || itemVipInfo.AUnit <= 0)
+                return -1;
+
+            if (renewal == itemVipInfo.AUnit)
+                return itemVipInfo.AValue1;
+            if (renewal == itemVipInfo.BUnit)
+                return itemVipInfo.BValue1;
+            if (renewal == itemVipInfo.CUnit)
+                return itemVipInfo.CValue1;
+
+            return (int)Math.Ceiling((float)itemVipInfo.AValue1 * renewal / itemVipInfo.AUnit);
         }
-		public int HandlePacket(GameClient client, GSPacketIn packet)
-		{
-			string nickname = packet.ReadString();
-			int renewval_days = packet.ReadInt();
-			int money = TotalPrice(renewval_days);
-			string msg = "Kích hoạt VIP thành công!";
 
-			GamePlayer player = WorldMgr.GetClientByPlayerNickName(nickname);
-			DailyRecordInfo dailyRecord = new DailyRecordInfo();
-			dailyRecord.UserID = client.Player.PlayerCharacter.ID;
-			dailyRecord.Type = 6;
-			dailyRecord.Value = "VIP";
-			if (client.Player.MoneyDirect(money, false, false))
-			{
-				DateTime now = DateTime.Now;
-				int typeVIP = (int)client.Player.SetTypeVIP(renewval_days);
-				using (PlayerBussiness playerBussiness = new PlayerBussiness())
-				{
+        private static void Refund(GamePlayer player, int paymentMode, int charged)
+        {
+            if (charged <= 0)
+                return;
 
-					playerBussiness.VIPRenewal(nickname, renewval_days, typeVIP, ref now);
-					if (player == null)
-					{
-						msg = "Người chơi " + nickname + " không tồn tại hoặc tạm vắng!";
-					}
-					else
-					{
-						if (client.Player.PlayerCharacter.NickName == nickname)
-						{
-							if (client.Player.PlayerCharacter.VIPLevel == 9)
-							{
-								msg = "Bạn đã đạt cấp VIP tối đa!";
-								client.Player.SendMessage(msg);
-								return 0;
-							}
-							else
-							{
-								if (client.Player.PlayerCharacter.typeVIP == 0)
-								{
-									client.Player.OpenVIP(renewval_days, now);
-								}
-								else
-								{
-									client.Player.ContinuousVIP(renewval_days, now);
-									msg = "Gia hạn VIP thành công!";
-								}
-							}
-							client.Player.AddExpVip(money);
-							if (client.Player.PlayerCharacter.typeVIP > 0)
-								client.Player.PlayerCharacter.VIPNextLevelDaysNeeded = client.Player.GetVIPNextLevelDaysNeeded(client.Player.PlayerCharacter.VIPLevel, client.Player.PlayerCharacter.VIPExp);
-							client.Out.SendOpenVIP(client.Player);
-						}
-						else
-						{
-							string message2;
-							if (player.PlayerCharacter.typeVIP == 0)
-							{
-								player.OpenVIP(renewval_days, now);
-								msg = "Kích hoạt VIP cho " + nickname + " thàng công!";
-								message2 = client.Player.PlayerCharacter.NickName + ", tiếp phí VIP cho bạn thành công!";
-							}
-							else
-							{
-								player.ContinuousVIP(renewval_days, now);
-								msg = "Gia hạn VIP cho " + nickname + " thàng công!";
-								message2 = client.Player.PlayerCharacter.NickName + ", gia hạn VIP cho bạn thành công!";
-							}
-							player.AddExpVip(money);
-							if (player.PlayerCharacter.typeVIP > 0)
-								player.PlayerCharacter.VIPNextLevelDaysNeeded = player.GetVIPNextLevelDaysNeeded(player.PlayerCharacter.VIPLevel, player.PlayerCharacter.VIPExp);
-							player.Out.SendOpenVIP(player);
-							player.Out.SendMessage(eMessageType.Normal, message2);
-						}
-					}
-					client.Out.SendMessage(eMessageType.Normal, msg);
-					
-				}
-			}
-			return 0;
-		}
-	}
+            if (paymentMode == PayWithGold)
+                player.AddGold(charged);
+            else
+                player.AddMoney(charged);
+        }
+
+        public int HandlePacket(GameClient client, GSPacketIn packet)
+        {
+            string nickname = packet.ReadString();
+            int renewalDays = packet.ReadInt();
+            int paymentMode = PayWithXu;
+            try
+            {
+                paymentMode = packet.ReadByte();
+            }
+            catch
+            {
+                // Older clients did not append a payment-mode byte.
+                paymentMode = PayWithXu;
+            }
+
+            if (paymentMode != PayWithGold)
+                paymentMode = PayWithXu;
+
+            int xuPrice = TotalPrice(renewalDays);
+            if (renewalDays <= 0 || xuPrice <= 0)
+            {
+                client.Out.SendMessage(eMessageType.Normal, "Thời hạn VIP không hợp lệ.");
+                return 0;
+            }
+
+            int charged;
+            try
+            {
+                charged = paymentMode == PayWithGold ? checked(xuPrice * GoldPerXu) : xuPrice;
+            }
+            catch (OverflowException)
+            {
+                client.Out.SendMessage(eMessageType.Normal, "Chi phí VIP không hợp lệ.");
+                return 0;
+            }
+
+            bool paid = paymentMode == PayWithGold
+                ? client.Player.RemoveGold(charged) == charged
+                : client.Player.MoneyDirect(charged, false, false);
+            if (!paid)
+            {
+                client.Out.SendMessage(
+                    eMessageType.Normal,
+                    paymentMode == PayWithGold ? "Không đủ Vàng để gia hạn VIP." : "Không đủ Xu để gia hạn VIP.");
+                return 0;
+            }
+
+            string msg = "Kích hoạt VIP thành công!";
+            GamePlayer player = WorldMgr.GetClientByPlayerNickName(nickname);
+            DailyRecordInfo dailyRecord = new DailyRecordInfo
+            {
+                UserID = client.Player.PlayerCharacter.ID,
+                Type = 6,
+                Value = "VIP"
+            };
+
+            DateTime expireDay = DateTime.Now;
+            int typeVIP = (int)client.Player.SetTypeVIP(renewalDays);
+            using (PlayerBussiness playerBussiness = new PlayerBussiness())
+            {
+                int renewalResult = playerBussiness.VIPRenewal(nickname, renewalDays, typeVIP, ref expireDay);
+                if (renewalResult != 1)
+                {
+                    Refund(client.Player, paymentMode, charged);
+                    client.Out.SendMessage(eMessageType.Normal, "Gia hạn VIP thất bại. Chi phí đã được hoàn lại.");
+                    return 0;
+                }
+
+                if (player == null)
+                {
+                    msg = "Đã cập nhật VIP cho " + nickname + ". Người chơi đang offline; dữ liệu sẽ có hiệu lực khi đăng nhập.";
+                }
+                else if (client.Player.PlayerCharacter.NickName == nickname)
+                {
+                    if (client.Player.PlayerCharacter.typeVIP == 0)
+                    {
+                        client.Player.OpenVIP(renewalDays, expireDay);
+                    }
+                    else
+                    {
+                        client.Player.ContinuousVIP(renewalDays, expireDay);
+                        msg = "Gia hạn VIP thành công!";
+                    }
+
+                    client.Player.AddExpVip(xuPrice);
+                    if (client.Player.PlayerCharacter.typeVIP > 0)
+                        client.Player.PlayerCharacter.VIPNextLevelDaysNeeded = client.Player.GetVIPNextLevelDaysNeeded(client.Player.PlayerCharacter.VIPLevel, client.Player.PlayerCharacter.VIPExp);
+                    client.Out.SendOpenVIP(client.Player);
+                }
+                else
+                {
+                    string receiverMessage;
+                    if (player.PlayerCharacter.typeVIP == 0)
+                    {
+                        player.OpenVIP(renewalDays, expireDay);
+                        msg = "Kích hoạt VIP cho " + nickname + " thành công!";
+                        receiverMessage = client.Player.PlayerCharacter.NickName + " đã kích hoạt VIP cho bạn!";
+                    }
+                    else
+                    {
+                        player.ContinuousVIP(renewalDays, expireDay);
+                        msg = "Gia hạn VIP cho " + nickname + " thành công!";
+                        receiverMessage = client.Player.PlayerCharacter.NickName + " đã gia hạn VIP cho bạn!";
+                    }
+
+                    player.AddExpVip(xuPrice);
+                    if (player.PlayerCharacter.typeVIP > 0)
+                        player.PlayerCharacter.VIPNextLevelDaysNeeded = player.GetVIPNextLevelDaysNeeded(player.PlayerCharacter.VIPLevel, player.PlayerCharacter.VIPExp);
+                    player.Out.SendOpenVIP(player);
+                    player.Out.SendMessage(eMessageType.Normal, receiverMessage);
+                }
+
+                client.Out.SendMessage(eMessageType.Normal, msg);
+            }
+
+            return 0;
+        }
+    }
 }

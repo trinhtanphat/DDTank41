@@ -106,18 +106,14 @@ namespace Game.Server.GameUtils
 			}
 			lock (m_lock)
 			{
-				m_fields[place] = item;
 				if (m_fields[place] != null)
 				{
-					place = -1;
+					return false;
 				}
-				else
-				{
-					m_fields[place] = item;
-					item.FieldID = place;
-				}
+				m_fields[place] = item;
+				item.FieldID = place;
 			}
-			return place != -1;
+			return true;
         }
 
         public virtual bool AddOtherFieldTo(UserFieldInfo item, int place)
@@ -128,18 +124,14 @@ namespace Game.Server.GameUtils
 			}
 			lock (m_lock)
 			{
-				m_otherFields[place] = item;
 				if (m_otherFields[place] != null)
 				{
-					place = -1;
+					return false;
 				}
-				else
-				{
-					m_otherFields[place] = item;
-					item.FieldID = place;
-				}
+				m_otherFields[place] = item;
+				item.FieldID = place;
 			}
-			return place != -1;
+			return true;
         }
 
         public virtual bool RemoveOtherField(UserFieldInfo item)
@@ -253,18 +245,31 @@ namespace Game.Server.GameUtils
         public virtual bool GrowField(int fieldId, int templateID)
         {
 			ItemTemplateInfo itemTemplateInfo = ItemMgr.FindItemTemplate(templateID);
+			if (fieldId < 0 || fieldId >= m_fields.Length || itemTemplateInfo == null)
+			{
+				return false;
+			}
 			lock (m_lock)
 			{
-				m_fields[fieldId].SeedID = itemTemplateInfo.TemplateID;
-				m_fields[fieldId].PlantTime = DateTime.Now;
-				m_fields[fieldId].GainCount = itemTemplateInfo.Property2;
-				m_fields[fieldId].FieldValidDate = itemTemplateInfo.Property3;
+				UserFieldInfo field = m_fields[fieldId];
+				if (field == null || field.SeedID != 0)
+				{
+					return false;
+				}
+				field.SeedID = itemTemplateInfo.TemplateID;
+				field.PlantTime = DateTime.Now;
+				field.GainCount = itemTemplateInfo.Property2;
+				field.FieldValidDate = itemTemplateInfo.Property3;
 			}
 			return true;
         }
 
         public virtual bool killCropField(int fieldId)
         {
+			if (fieldId < 0 || fieldId >= m_fields.Length)
+			{
+				return false;
+			}
 			lock (m_lock)
 			{
 				if (m_fields[fieldId] != null)

@@ -1,0 +1,59 @@
+name: Farm and treasure regression gate
+
+on:
+  pull_request:
+    paths:
+      - "Game.Server/**"
+      - "Bussiness/**"
+      - "SqlDataProvider/**"
+      - "Source Flash/src/farm/**"
+      - "Source Flash/src/ddt/manager/GameSocketOut.as"
+      - "tests/farm-planting-regression.ps1"
+      - "tests/farm-ruffle-click-plant-smoke.ps1"
+      - "tests/treasure-server-regression.ps1"
+      - ".github/workflows/farm-treasure-gate.yml"
+  workflow_dispatch:
+
+jobs:
+  farm-treasure:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Farm server regression
+        shell: powershell
+        run: ./tests/farm-planting-regression.ps1
+
+      - name: Ruffle click-to-plant regression
+        shell: powershell
+        run: ./tests/farm-ruffle-click-plant-smoke.ps1
+
+      - name: Treasure server regression
+        shell: powershell
+        run: ./tests/treasure-server-regression.ps1
+
+      - name: Restore Game.Server
+        shell: powershell
+        run: dotnet restore ./Game.Server/Game.Server.csproj
+
+      - name: Build Game.Server
+        shell: powershell
+        run: dotnet build ./Game.Server/Game.Server.csproj -c Release --no-restore --nologo
+
+      - name: Upload server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: farm-treasure-gameserver-net472
+          path: |
+            Game.Server/bin/Release/net472/Game.Server.dll
+            Game.Server/bin/Release/net472/Game.Server.pdb
+            Bussiness/bin/Release/net472/Bussiness.dll
+            SqlDataProvider/bin/Release/net472/SqlDataProvider.dll
+          if-no-files-found: error

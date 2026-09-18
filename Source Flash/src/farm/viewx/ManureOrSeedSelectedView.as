@@ -145,9 +145,9 @@ package farm.viewx
          this._currentCell = param1.currentTarget as FarmCell;
          if(this._currentCell.itemInfo.Count != 0)
          {
-            this._currentCell.dragStart();
             if(this._type == SEED)
             {
+               FarmModelController.instance.pendingSeedTemplateId = this._currentCell.itemInfo.TemplateID;
                if(PetBagController.instance().haveTaskOrderByID(PetFarmGuildeTaskType.PET_TASK4))
                {
                   PetBagController.instance().clearCurrentPetFarmGuildeArrow(ArrowType.CHOOSE_SEED);
@@ -156,6 +156,7 @@ package farm.viewx
             }
             else if(this._type == MANURE)
             {
+               this._currentCell.dragStart();
                if(PetBagController.instance().haveTaskOrderByID(PetFarmGuildeTaskType.PET_TASK4))
                {
                   PetBagController.instance().clearCurrentPetFarmGuildeArrow(ArrowType.CHOOSE_FERTILLZER);
@@ -178,6 +179,7 @@ package farm.viewx
       private function __onClose(param1:MouseEvent) : void
       {
          SoundManager.instance.play("008");
+         FarmModelController.instance.pendingSeedTemplateId = 0;
          visible = false;
          PetBagController.instance().clearCurrentPetFarmGuildeArrow(ArrowType.CHOOSE_SEED);
          PetBagController.instance().clearCurrentPetFarmGuildeArrow(ArrowType.CHOOSE_FERTILLZER);

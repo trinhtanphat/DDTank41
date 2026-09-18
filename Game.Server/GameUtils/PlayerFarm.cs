@@ -356,7 +356,7 @@ namespace Game.Server.GameUtils
 
         public virtual bool GainField(int fieldId)
         {
-			if (fieldId < 0 || fieldId > GetFields().Count())
+			if (fieldId < 0 || fieldId >= base.CurrentFields.Length || base.CurrentFields[fieldId] == null)
 			{
 				return false;
 			}

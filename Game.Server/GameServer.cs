@@ -1197,6 +1197,10 @@ namespace Game.Server
                 {
                     return false;
                 }
+                if (!InitComponent(TreasureAwardMgr.Init(), "TreasureAwardMgr Init"))
+                {
+                    return false;
+                }
                 if (!InitComponent(ItemBoxMgr.Init(), "ItemBox Init"))
                 {
                     return false;

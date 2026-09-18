@@ -45,6 +45,20 @@ namespace Game.Server.Packets.Client
         {
             string nickname = packet.ReadString();
             int renewalDays = packet.ReadInt();
+
+            // Legacy Flash clients always append isBand as the third field.
+            // Preserve that byte for wire compatibility and only treat an
+            // optional fourth byte as the explicit Xu/Gold payment mode.
+            bool legacyIsBand = false;
+            try
+            {
+                legacyIsBand = packet.ReadBoolean();
+            }
+            catch
+            {
+                legacyIsBand = false;
+            }
+
             int paymentMode = PayWithXu;
             try
             {
@@ -52,7 +66,7 @@ namespace Game.Server.Packets.Client
             }
             catch
             {
-                // Older clients did not append a payment-mode byte.
+                // Clients without the new fourth field remain Xu-only.
                 paymentMode = PayWithXu;
             }
 

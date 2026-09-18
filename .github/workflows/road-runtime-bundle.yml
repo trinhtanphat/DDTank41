@@ -36,15 +36,15 @@ jobs:
 
       - name: Restore Road.Service
         shell: powershell
-        run: dotnet restore ./Road.Service/Road.Service.csproj
+        run: dotnet restore ./Road.Service/Road.Service.csproj -r win-x86
 
       - name: Build Road.Service
         shell: powershell
-        run: dotnet build ./Road.Service/Road.Service.csproj -c Release --no-restore --nologo
+        run: dotnet build ./Road.Service/Road.Service.csproj -c Release -r win-x86 --no-restore --nologo
 
       - name: Upload Road runtime
         uses: actions/upload-artifact@v4
         with:
           name: road-runtime-b613471
-          path: Road.Service/bin/Release/net472/**
+          path: Road.Service/bin/Release/**
           if-no-files-found: error

@@ -826,6 +826,8 @@ public class GamePlayer : IGamePlayer
 
     public PlayerFarm Farm { get; }
 
+    public PlayerTreasure Treasure { get; }
+
     public int PlayerId => m_playerId;
 
     public PlayerProperty PlayerProp => m_playerProp;
@@ -1137,6 +1139,7 @@ public class GamePlayer : IGamePlayer
         m_petEgg = new PlayerInventory(this, saveTodb: true, 30, 35, 0, autoStack: true);
         m_cardBag = new CardInventory(this, saveTodb: true, 100, 5);
         Farm = new PlayerFarm(this, saveTodb: true, 30, 0);
+        Treasure = new PlayerTreasure(this, saveTodb: true);
         m_petBag = new PetInventory(this, saveTodb: true, 20, 8, 0);
         m_rank = new PlayerRank(this, saveToDb: true);
         m_playerProp = new PlayerProperty(this);
@@ -4478,6 +4481,7 @@ public class GamePlayer : IGamePlayer
             PetBag.SaveToDatabase(saveAdopt: true);
             FarmBag.SaveToDatabase();
             Farm.SaveToDatabase();
+            Treasure.SaveToDatabase();
             Actives.SaveToDatabase();
             this.AvatarCollect.SaveToDatabase();
             try
@@ -5324,6 +5328,7 @@ public class GamePlayer : IGamePlayer
         m_extra.LoadFromDatabase();
         m_petBag.LoadFromDatabase();
         FarmBag.LoadFromDatabase();
+        Treasure.LoadFromDatabase();
         m_playerActive.LoadFromDatabase();
         this.m_avatarcollect.LoadFromDatabase();
     }

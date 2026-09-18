@@ -1,0 +1,24 @@
+name: Quest reward delivery gate
+
+on:
+  pull_request:
+    paths:
+      - 'Game.Server/Quests/QuestInventory.cs'
+      - 'tests/quest-reward-delivery-smoke.ps1'
+      - '.github/workflows/quest-reward-delivery-gate.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'Game.Server/Quests/QuestInventory.cs'
+      - 'tests/quest-reward-delivery-smoke.ps1'
+      - '.github/workflows/quest-reward-delivery-gate.yml'
+
+jobs:
+  reward-delivery:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify quest reward delivery contract
+        shell: powershell
+        run: .\tests\quest-reward-delivery-smoke.ps1

@@ -530,11 +530,22 @@ package farm.viewx
       protected function __onFieldBlockClick(param1:FarmEvent) : void
       {
          var _loc3_:Point = null;
+         var _loc7_:FarmFieldBlock = param1.currentTarget as FarmFieldBlock;
          if(FarmModelController.instance.model.helperArray[0] || FarmModelController.instance.model.currentFarmerId != PlayerManager.Instance.Self.ID)
          {
             return;
          }
          SoundManager.instance.play("008");
+         if(FarmModelController.instance.pendingSeedTemplateId > 0 && _loc7_ && _loc7_.info && _loc7_.info.seedID == 0 && _loc7_.info.isDig)
+         {
+            FarmModelController.instance.sowSeed(_loc7_.info.fieldID,FarmModelController.instance.pendingSeedTemplateId);
+            FarmModelController.instance.pendingSeedTemplateId = 0;
+            if(this._selectedView)
+            {
+               this._selectedView.visible = false;
+            }
+            return;
+         }
          if(this._selectedView == null)
          {
             this._selectedView = new ManureOrSeedSelectedView();
@@ -1080,6 +1091,7 @@ package farm.viewx
       
       public function dispose() : void
       {
+         FarmModelController.instance.pendingSeedTemplateId = 0;
          this.removeEvent();
          if(this._bg)
          {

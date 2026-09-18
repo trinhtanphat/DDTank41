@@ -46,6 +46,8 @@ package farm
       
       public var midAutumnFlag:Boolean;
       
+      public var pendingSeedTemplateId:int = 0;
+      
       public function FarmModelController()
       {
          super();
@@ -59,6 +61,7 @@ package farm
       public function setup() : void
       {
          this._model = new FarmModel();
+         this.pendingSeedTemplateId = 0;
          this._landInfoVector = new Vector.<FieldVO>();
          this.initEvent();
          FarmComposeHouseController.instance().setup();
@@ -415,6 +418,7 @@ package farm
       
       private function __onSeeding(param1:CrazyTankSocketEvent) : void
       {
+         this.pendingSeedTemplateId = 0;
          var _loc2_:PackageIn = param1.pkg;
          var _loc3_:int = _loc2_.readInt();
          var _loc4_:int = _loc2_.readInt();
@@ -513,6 +517,7 @@ package farm
       
       private function __onExitFarm(param1:CrazyTankSocketEvent) : void
       {
+         this.pendingSeedTemplateId = 0;
       }
       
       public function updateSetupFriendListLoader() : void

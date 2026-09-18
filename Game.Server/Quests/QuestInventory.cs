@@ -240,17 +240,8 @@ namespace Game.Server.Quests
             this.m_player.BeginAllChanges();
             try
             {
-                bool checkbag = true;
-                if (m_player.EquipBag.FindFirstEmptySlot() < 0)
-                    checkbag = false;
-                if (m_player.PropBag.FindFirstEmptySlot() < 0)
-                    checkbag = false;
-                if (m_player.FarmBag.FindFirstEmptySlot() < 0)
-                    checkbag = false;
-                if (checkbag)
+                if (baseQuest.Finish(this.m_player))
                 {
-                    if (baseQuest.Finish(this.m_player))
-                    {
                         List<QuestAwardInfo> awards = QuestMgr.GetQuestGoods(qinfo);
                         List<ItemInfo> mainBg = new List<ItemInfo>();
                         List<ItemInfo> propBg = new List<ItemInfo>();
@@ -278,7 +269,7 @@ namespace Game.Server.Quests
                                         }
                                         for (int len = 0; len < tempCount; len += temp.MaxCount)
                                         {
-                                            int num3 = (len + temp.MaxCount > award.RewardItemCount) ? (award.RewardItemCount - len) : temp.MaxCount;
+                                            int num3 = (len + temp.MaxCount > tempCount) ? (tempCount - len) : temp.MaxCount;
                                             ItemInfo itemInfo = ItemInfo.CreateFromTemplate(temp, num3, 106);
                                             if (itemInfo != null)
                                             {
@@ -311,24 +302,6 @@ namespace Game.Server.Quests
                                     }
                                 }
                             }
-                        }
-                        if (mainBg.Count > 0 && this.m_player.EquipBag.GetEmptyCount() < mainBg.Count)
-                        {
-                            baseQuest.CancelFinish(this.m_player);
-                            this.m_player.Out.SendMessage(eMessageType.BIGBUGLE_NOTICE, this.m_player.GetInventoryName(eBageType.EquipBag) + LanguageMgr.GetTranslation("Game.Server.Quests.BagFull", Array.Empty<object>()) + " ");
-                            return false;
-                        }
-                        if (propBg.Count > 0 && this.m_player.PropBag.GetEmptyCount() < propBg.Count)
-                        {
-                            baseQuest.CancelFinish(this.m_player);
-                            this.m_player.Out.SendMessage(eMessageType.BIGBUGLE_NOTICE, this.m_player.GetInventoryName(eBageType.PropBag) + LanguageMgr.GetTranslation("Game.Server.Quests.BagFull", Array.Empty<object>()) + " ");
-                            return false;
-                        }
-                        if (farmBg.Count > 0 && this.m_player.FarmBag.GetEmptyCount() < farmBg.Count)
-                        {
-                            baseQuest.CancelFinish(this.m_player);
-                            this.m_player.Out.SendMessage(eMessageType.BIGBUGLE_NOTICE, this.m_player.GetInventoryName(eBageType.FarmBag) + LanguageMgr.GetTranslation("Game.Server.Quests.BagFull", Array.Empty<object>()) + " ");
-                            return false;
                         }
                         foreach (ItemInfo item in mainBg)
                         {
@@ -388,7 +361,7 @@ namespace Game.Server.Quests
                         }
                         foreach (ItemInfo item in farmBg)
                         {
-                            if (!m_player.EquipBag.AddItem(item))
+                            if (!m_player.FarmBag.AddItem(item))
                             {
                                 overdueItems.Add(item);
                             }
@@ -455,11 +428,6 @@ namespace Game.Server.Quests
                         this.m_player.PlayerCharacter.QuestSite = this.m_states;
                         this.SaveToDatabase();
                     }
-                }
-                else
-                {
-                    m_player.SendMessage("Bạn cần dọn túi trước khi hoàn thành nhiệm vụ.");
-                }
                 this.OnQuestsChanged(baseQuest);
             }
             catch (Exception ex)

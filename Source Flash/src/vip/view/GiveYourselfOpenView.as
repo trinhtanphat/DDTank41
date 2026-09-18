@@ -610,7 +610,7 @@ package vip.view
       
       protected function send() : void
       {
-         VipController.instance.sendOpenVip(PlayerManager.Instance.Self.NickName,this.days,this._paymentMode);
+         VipController.instance.sendOpenVip(PlayerManager.Instance.Self.NickName,this.days,this._confirmFrame.isBand,this._paymentMode);
       }
       
       private function __focusOtherInput(param1:MouseEvent) : void

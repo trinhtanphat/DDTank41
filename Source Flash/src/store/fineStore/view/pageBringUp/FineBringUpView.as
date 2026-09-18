@@ -226,7 +226,9 @@ package store.fineStore.view.pageBringUp
          this._bindMoneyButton = ComponentFactory.Instance.creatCustomObject("bagAndInfo.bag.GiftButton");
          this._bindMoneyButton = ComponentFactory.Instance.creatCustomObject("ddtstore.StoreBagView.GiftButton");
          var _loc1_:int = 6000;
-         var _loc2_:int = int(ServerConfigManager.instance.VIPExtraBindMoneyUpper[PlayerManager.Instance.Self.VIPLevel - 1]);
+         var vipBind:Array = ServerConfigManager.instance.VIPExtraBindMoneyUpper;
+         var vipIndex:int = vipBind && vipBind.length > 0 ? Math.max(0,Math.min(vipBind.length - 1,PlayerManager.Instance.Self.VIPLevel - 1)) : 0;
+         var _loc2_:int = vipBind && vipBind.length > 0 ? int(vipBind[vipIndex]) : 0;
          if(PlayerManager.Instance.Self.IsVIP)
          {
             this._bindMoneyButton.tipData = LanguageMgr.GetTranslation("tank.view.bagII.GiftDirections",(_loc1_ + _loc2_).toString());

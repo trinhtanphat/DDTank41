@@ -176,6 +176,12 @@ package hall
       
       private const VIP_LEVEL9:String = "112120";
       
+      private const VIP_LEVEL10:String = "112204";
+      
+      private const VIP_LEVEL11:String = "112205";
+      
+      private const VIP_LEVEL12:String = "112206";
+      
       private var _vipChestsArr:Array;
       
       private var _trainerWelcomeView:WelcomeView;
@@ -202,7 +208,13 @@ package hall
       {
          this.btnArray = ["church_mc","shop_mc","dungeon_mc","roomList_mc","auction_mc","active_mc","civil_mc","store_mc","campaignLab_mc","tofflist_mc","hotWell_mc","consortia_mc"];
          this.txtArray = ["txt_church_mc","txt_shop_mc","txt_dungeon_mc","txt_roomList_mc","txt_auction_mc","txt_master_mc","txt_civil_mc","txt_store_mc","txt_campaignLab_mc","txt_tofflist_mc","txt_spa_mc","txt_consortia_mc"];
-         this._vipChestsArr = [this.VIP_LEVEL1,this.VIP_LEVEL2,this.VIP_LEVEL3,this.VIP_LEVEL4,this.VIP_LEVEL5,this.VIP_LEVEL6,this.VIP_LEVEL7,this.VIP_LEVEL8,this.VIP_LEVEL9];
+         this._vipChestsArr = [
+            this.VIP_LEVEL1,this.VIP_LEVEL2,this.VIP_LEVEL3,this.VIP_LEVEL4,this.VIP_LEVEL5,
+            this.VIP_LEVEL6,this.VIP_LEVEL7,this.VIP_LEVEL8,this.VIP_LEVEL9,
+            this.VIP_LEVEL10,this.VIP_LEVEL11,this.VIP_LEVEL12,
+            this.VIP_LEVEL12,this.VIP_LEVEL12,this.VIP_LEVEL12,this.VIP_LEVEL12,
+            this.VIP_LEVEL12,this.VIP_LEVEL12,this.VIP_LEVEL12,this.VIP_LEVEL12
+         ];
          super();
          try
          {
@@ -517,7 +529,8 @@ package hall
       
       private function _getStrArr(param1:DictionaryData) : Array
       {
-         return param1[this._vipChestsArr[PlayerManager.Instance.Self.VIPLevel - 1]];
+         var index:int = Math.max(0,Math.min(this._vipChestsArr.length - 1,PlayerManager.Instance.Self.VIPLevel - 1));
+         return param1[this._vipChestsArr[index]];
       }
       
       private function __responseHandler(param1:FrameEvent) : void

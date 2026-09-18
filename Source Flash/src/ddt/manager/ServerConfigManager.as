@@ -237,9 +237,10 @@ package ddt.manager
 	  {
 		  var _loc3_:int = param1 % 10 == 0 ? int(int(int(this._BindMoneyMax[int(param1 / 10) - 1]))) : int(int(int(this._BindMoneyMax[int(param1 / 10)])));
 		  var _loc4_:int = 0;
-		  if(PlayerManager.Instance.Self.IsVIP && param2 > 0)
+		  if(PlayerManager.Instance.Self.IsVIP && param2 > 0 && this._VIPExtraBindMoneyUpper && this._VIPExtraBindMoneyUpper.length > 0)
 		  {
-			  _loc4_ = int(this._VIPExtraBindMoneyUpper[param2 - 1]);
+			  var vipIndex:int = Math.max(0,Math.min(this._VIPExtraBindMoneyUpper.length - 1,param2 - 1));
+			  _loc4_ = int(this._VIPExtraBindMoneyUpper[vipIndex]);
 		  }
 		  return _loc3_ + _loc4_;
 	  }

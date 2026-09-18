@@ -24,7 +24,7 @@ if ($mainView -notmatch 'sowSeed\(_loc7_\.info\.fieldID,FarmModelController\.ins
 if ($socket -notmatch 'writeByte\(FarmPackageType\.GROW_FIELD\)') {
     throw 'Farm seed packet opcode is missing.'
 }
-if ($socket -notmatch 'writeByte\(13\).*writeInt\(param2\).*writeInt\(param1\)') {
+if ($socket -notmatch '(?s)writeByte\(13\).*?writeInt\(param2\).*?writeInt\(param1\)') {
     throw 'Farm seed packet payload order no longer matches the server handler.'
 }
 

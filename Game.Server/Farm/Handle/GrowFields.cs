@@ -7,13 +7,23 @@ namespace Game.Server.Farm.Handle
     {
         public bool CommandHandler(GamePlayer Player, GSPacketIn packet)
         {
-			int num = packet.ReadByte();
-			int num2 = packet.ReadInt();
+			int bagType = packet.ReadByte();
+			int templateId = packet.ReadInt();
 			int fieldId = packet.ReadInt();
-			if (Player.Farm.GrowField(fieldId, num2))
+			if (Player.FarmBag.GetItemCount(templateId) <= 0)
 			{
-				Player.FarmBag.RemoveTemplate(num2, 1);
-				Player.OnSeedFoodPetEvent();
+				return true;
+			}
+			if (Player.Farm.GrowField(fieldId, templateId))
+			{
+				if (Player.FarmBag.RemoveTemplate(templateId, 1))
+				{
+					Player.OnSeedFoodPetEvent();
+				}
+				else
+				{
+					Player.Farm.killCropField(fieldId);
+				}
 			}
 			return true;
         }

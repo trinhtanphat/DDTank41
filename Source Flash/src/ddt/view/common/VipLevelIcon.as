@@ -10,6 +10,7 @@ package ddt.view.common
    import ddt.data.player.BasePlayer;
    import ddt.manager.LanguageMgr;
    import ddt.manager.PlayerManager;
+   import ddt.manager.ServerConfigManager;
    import ddt.manager.SoundManager;
    import flash.display.DisplayObject;
    import flash.display.Sprite;
@@ -90,7 +91,7 @@ package ddt.view.common
                   buttonMode = true;
                   if(PlayerManager.Instance.Self.IsVIP)
                   {
-                     if(PlayerManager.Instance.Self.VIPLevel < 9)
+                     if(PlayerManager.Instance.Self.VIPLevel < ServerConfigManager.instance.VIPMaxLevel)
                      {
                         this._tipData = LanguageMgr.GetTranslation("ddt.vip.vipIcon.upGradDays",PlayerManager.Instance.Self.VIPNextLevelDaysNeeded,PlayerManager.Instance.Self.VIPLevel + 1);
                      }
@@ -149,17 +150,18 @@ package ddt.view.common
       
       private function updateIcon() : void
       {
+         var displayLevel:int = Math.max(0,Math.min(9,this._level));
          DisplayUtils.removeDisplay(this._juniorIcon,this._seniorIcon);
          if(this._size == SIZE_SMALL)
          {
             if(this._type == BasePlayer.SENIOR_VIP)
             {
-               this._seniorIcon.setFrame(this._level + 9);
+               this._seniorIcon.setFrame(displayLevel + 9);
                addChild(this._seniorIcon);
             }
             else if(this._type < BasePlayer.SENIOR_VIP)
             {
-               this._juniorIcon.setFrame(this._level + 11);
+               this._juniorIcon.setFrame(displayLevel + 11);
                addChild(this._juniorIcon);
             }
             else
@@ -172,12 +174,12 @@ package ddt.view.common
          {
             if(this._type == BasePlayer.SENIOR_VIP)
             {
-               this._seniorIcon.setFrame(this._level - 1);
+               this._seniorIcon.setFrame(Math.max(0,displayLevel - 1));
                addChild(this._seniorIcon);
             }
             else if(this._type < BasePlayer.SENIOR_VIP)
             {
-               this._juniorIcon.setFrame(this._level + 1);
+               this._juniorIcon.setFrame(displayLevel + 1);
                addChild(this._juniorIcon);
             }
             else
